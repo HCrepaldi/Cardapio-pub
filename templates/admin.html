@@ -31,7 +31,7 @@
         <!-- TOPO -->
         <div class="flex flex-wrap justify-between items-center gap-4 mb-6 pb-4 border-b border-pubBorder">
             <div class="flex items-center gap-3">
-                <span class="text-3xl">🎩</span>
+                <img src="/static/logo.png" alt="No Black Tie Pub" class="h-10 w-auto object-contain" onerror="this.onerror=null; this.src='/static/logo.svg';">
                 <div>
                     <span class="text-xs font-bold text-pubGold uppercase tracking-widest">Painel Interno</span>
                     <h1 class="text-xl font-black text-white uppercase">No Black Tie Pub</h1>
@@ -84,7 +84,7 @@
                 <div>Mesas Alocadas: <strong class="text-white text-base">{{ mesas_ocupadas|length }}</strong></div>
             </div>
 
-            <button type="button" onclick="abrirModalCadastro()" class="bg-pubGold hover:bg-yellow-600 text-black font-black px-4 py-2.5 rounded-lg text-xs uppercase tracking-wider shadow-lg shadow-yellow-950/40">
+            <button type="button" onclick="abrirModalNovaReserva()" class="bg-pubGold hover:bg-yellow-600 text-black font-black px-4 py-2.5 rounded-lg text-xs uppercase tracking-wider shadow-lg shadow-yellow-950/40 cursor-pointer">
                 ➕ Lançar Reserva (Instagram)
             </button>
             {% endif %}
@@ -106,7 +106,7 @@
                             <th class="p-4 text-center">Pessoas</th>
                             <th class="p-4 text-center">Aniversário?</th>
                             <th class="p-4 text-center">Mesa(s) Alocada(s)</th>
-                            <th class="p-4 text-right">Ação</th>
+                            <th class="p-4 text-right">Ações</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-pubBorder">
@@ -115,7 +115,7 @@
                             <td class="p-4 font-mono font-bold text-pubGold text-xs">{{ r.codigo }}</td>
                             <td class="p-4">
                                 <div class="font-bold text-white">{{ r.nome_cliente }}</div>
-                                <div class="text-xs text-gray-400">{{ r.whatsapp }}</div>
+                                <div class="text-xs text-gray-400">{{ r.whatsapp or 'Sem WhatsApp' }}</div>
                             </td>
                             <td class="p-4 text-center font-bold text-white text-base">{{ r.qtd_pessoas }}</td>
                             <td class="p-4 text-center">
@@ -131,17 +131,29 @@
                                 </span>
                             </td>
                             <td class="p-4 text-right">
-                                <form method="POST" action="/admin/reservas/excluir/{{ r.id }}" class="inline" onsubmit="return confirm('Deseja liberar a mesa e excluir a reserva de {{ r.nome_cliente }}?');">
-                                    <button type="submit" class="text-xs text-red-500 hover:text-red-400 font-bold underline">
-                                        ✕ Desmarcar
+                                <div class="flex items-center justify-end gap-3">
+                                    <!-- Botão Editar -->
+                                    <button type="button" 
+                                            class="text-xs text-pubGold hover:text-yellow-400 font-bold underline cursor-pointer"
+                                            onclick="abrirModalEditar('{{ r.id }}', '{{ r.nome_cliente }}', '{{ r.whatsapp }}', '{{ r.qtd_pessoas }}', '{{ r.aniversario }}', '{{ r.mesas_alocadas }}')">
+                                        ✏️ Editar
                                     </button>
-                                </form>
+                                    
+                                    <span class="text-neutral-700">|</span>
+
+                                    <!-- Botão Excluir -->
+                                    <form method="POST" action="/admin/reservas/excluir/{{ r.id }}" class="inline" onsubmit="return confirm('Deseja liberar a mesa e excluir a reserva de {{ r.nome_cliente }}?');">
+                                        <button type="submit" class="text-xs text-red-500 hover:text-red-400 font-bold underline cursor-pointer">
+                                            ✕ Desmarcar
+                                        </button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                         {% else %}
                         <tr>
                             <td colspan="6" class="p-8 text-center text-gray-500 text-sm">
-                                Nenhuma reserva lançada para esta noite ainda. Clique no botão acima para lançar!
+                                Nenhuma reserva lançada para esta noite ainda.
                             </td>
                         </tr>
                         {% endfor %}
@@ -152,19 +164,23 @@
 
     </div>
 
-    <!-- MODAL DE LANÇAMENTO DIRETO NO MAPA PELA FLÁVIA -->
+    <!-- MODAL (USADO TANTO PARA LANÇAR NOVA QUANTO PARA EDITAR) -->
     <div id="modal-cadastro" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 escondido flex items-center justify-center p-4">
         <div class="bg-pubCard border border-pubBorder rounded-2xl max-w-2xl w-full p-5 shadow-2xl overflow-y-auto max-h-[95vh]">
             
             <div class="flex justify-between items-center pb-3 border-b border-pubBorder mb-4">
-                <div>
-                    <h3 class="text-base font-bold text-white">Lançar Nova Reserva no Salão</h3>
-                    <p class="text-xs text-gray-400">Preencha os dados e clique na(s) mesa(s) desejada(s)</p>
+                <div class="flex items-center gap-3">
+                    <img src="/static/logo.png" alt="Logo" class="h-8 w-auto object-contain" onerror="this.onerror=null; this.src='/static/logo.svg';">
+                    <div>
+                        <h3 id="modal-titulo" class="text-base font-bold text-white">Lançar Nova Reserva no Salão</h3>
+                        <p class="text-xs text-gray-400">Preencha os dados e escolha a(s) mesa(s)</p>
+                    </div>
                 </div>
                 <button type="button" onclick="fecharModalCadastro()" class="text-gray-400 hover:text-white text-xl font-bold p-1">✕</button>
             </div>
 
-            <form action="/admin/reservas/nova" method="POST" class="space-y-4">
+            <form id="form-modal" action="/admin/reservas/nova" method="POST" class="space-y-4">
+                <input type="hidden" name="reserva_id" id="input-reserva-id">
                 <input type="hidden" name="show_id" value="{{ show_atual.id if show_atual else '' }}">
                 <input type="hidden" name="mesas_alocadas" id="input-mesas-cadastro" required>
 
@@ -172,20 +188,20 @@
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-neutral-900/60 p-3 rounded-xl border border-pubBorder">
                     <div>
                         <label class="block text-[11px] uppercase font-bold text-gray-400 mb-1">Nome do Cliente</label>
-                        <input type="text" name="nome_cliente" required placeholder="Nome no Instagram" class="w-full bg-neutral-900 border border-pubBorder rounded-lg p-2 text-white text-xs focus:border-pubGold focus:outline-none">
+                        <input type="text" name="nome_cliente" id="campo-nome" required placeholder="Nome no Instagram" class="w-full bg-neutral-900 border border-pubBorder rounded-lg p-2 text-white text-xs focus:border-pubGold focus:outline-none">
                     </div>
                     <div>
-                        <label class="block text-[11px] uppercase font-bold text-gray-400 mb-1">WhatsApp (Opcional)</label>
-                        <input type="tel" name="whatsapp" placeholder="(99) 99999-9999" class="w-full bg-neutral-900 border border-pubBorder rounded-lg p-2 text-white text-xs focus:border-pubGold focus:outline-none">
+                        <label class="block text-[11px] uppercase font-bold text-gray-400 mb-1">WhatsApp</label>
+                        <input type="tel" name="whatsapp" id="campo-whatsapp" placeholder="(99) 99999-9999" class="w-full bg-neutral-900 border border-pubBorder rounded-lg p-2 text-white text-xs focus:border-pubGold focus:outline-none">
                     </div>
                     <div class="grid grid-cols-2 gap-2">
                         <div>
                             <label class="block text-[11px] uppercase font-bold text-gray-400 mb-1">Pessoas</label>
-                            <input type="number" name="qtd_pessoas" min="1" max="150" required value="4" class="w-full bg-neutral-900 border border-pubBorder rounded-lg p-2 text-white text-xs focus:border-pubGold focus:outline-none font-bold">
+                            <input type="number" name="qtd_pessoas" id="campo-pessoas" min="1" max="150" required value="4" class="w-full bg-neutral-900 border border-pubBorder rounded-lg p-2 text-white text-xs focus:border-pubGold focus:outline-none font-bold">
                         </div>
                         <div>
                             <label class="block text-[11px] uppercase font-bold text-gray-400 mb-1">Níver?</label>
-                            <select name="aniversario" class="w-full bg-neutral-900 border border-pubBorder rounded-lg p-2 text-white text-xs focus:border-pubGold focus:outline-none">
+                            <select name="aniversario" id="campo-aniversario" class="w-full bg-neutral-900 border border-pubBorder rounded-lg p-2 text-white text-xs focus:border-pubGold focus:outline-none">
                                 <option value="Não">Não</option>
                                 <option value="Sim">🎂 Sim</option>
                             </select>
@@ -193,19 +209,26 @@
                     </div>
                 </div>
 
-                <!-- MAPA DE SELEÇÃO RÁPIDA -->
+                <!-- SELETOR DE ABAS: TÉRREO VS MEZANINO -->
                 <div>
-                    <div class="flex justify-between items-center mb-2 text-xs">
-                        <span class="font-bold text-gray-400 uppercase">Escolha a(s) Mesa(s) no Salão:</span>
+                    <div class="flex justify-between items-center mb-2">
+                        <div class="flex gap-2">
+                            <button type="button" id="tab-btn-terreo" onclick="mudarAbaSetor('terreo')" class="px-3.5 py-1.5 rounded-lg bg-pubGold text-black font-black text-xs transition">
+                                Salão Térreo (1 a 22)
+                            </button>
+                            <button type="button" id="tab-btn-mezanino" onclick="mudarAbaSetor('mezanino')" class="px-3.5 py-1.5 rounded-lg bg-neutral-900 border border-pubBorder text-gray-400 font-bold text-xs hover:text-white transition">
+                                Mezanino (23 a 45)
+                            </button>
+                        </div>
+
                         <div class="flex gap-2 text-[10px]">
-                            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded bg-blue-600 inline-block"></span> Selecionada</span>
+                            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded bg-blue-600 inline-block"></span> Escolha</span>
                             <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded bg-red-950/80 border border-red-800 inline-block"></span> Ocupada</span>
                         </div>
                     </div>
 
-                    <div class="bg-neutral-950/90 border border-pubBorder rounded-xl p-3 min-h-[440px] flex flex-col justify-between">
-                        
-                        <!-- Palco -->
+                    <!-- ABA 1: SALÃO TÉRREO -->
+                    <div id="aba-terreo" class="bg-neutral-950/90 border border-pubBorder rounded-xl p-3 min-h-[440px] flex flex-col justify-between">
                         <div class="bg-neutral-900 border border-red-700/80 rounded py-1.5 text-center text-xs font-black text-red-400 uppercase tracking-widest mb-3">
                             🎸 P A L C O 🎤
                         </div>
@@ -214,7 +237,7 @@
                             <!-- Mesas Grandes (18 a 22) -->
                             <div class="flex flex-col justify-between w-16 py-1">
                                 {% for num in range(18, 23) %}
-                                <button type="button" id="btn-mesa-{{ num }}" onclick="toggleMesa('{{ num }}')" class="mesa-btn w-14 h-8 rounded text-xs font-bold border border-pubBorder flex items-center justify-center cursor-pointer">
+                                <button type="button" id="btn-mesa-{{ num }}" onclick="toggleMesa('{{ num }}')" class="mesa-btn w-14 h-8 rounded text-xs font-bold border border-pubBorder flex items-center justify-center">
                                     {{ num }}
                                 </button>
                                 {% endfor %}
@@ -222,50 +245,68 @@
 
                             <!-- Bistrôs e Pilares -->
                             <div class="flex-1 grid grid-cols-4 gap-2 items-center px-1">
-                                <!-- L1 -->
-                                <div class="flex justify-center"><button type="button" id="btn-mesa-17" onclick="toggleMesa('17')" class="mesa-btn w-9 h-9 rounded-full text-xs font-bold border border-pubBorder flex items-center justify-center cursor-pointer">17</button></div>
+                                <div class="flex justify-center"><button type="button" id="btn-mesa-17" onclick="toggleMesa('17')" class="mesa-btn w-9 h-9 rounded-full text-xs font-bold border border-pubBorder flex items-center justify-center">17</button></div>
                                 <div class="flex justify-center"><span class="w-8 h-8 rounded bg-red-900/80 border border-red-700 text-[8px] font-bold text-white flex items-center justify-center">PILAR</span></div>
-                                <div class="flex justify-center"><button type="button" id="btn-mesa-6" onclick="toggleMesa('6')" class="mesa-btn w-9 h-9 rounded-full text-xs font-bold border border-pubBorder flex items-center justify-center cursor-pointer">6</button></div>
-                                <div class="flex justify-center"><button type="button" id="btn-mesa-5" onclick="toggleMesa('5')" class="mesa-btn w-9 h-9 rounded-full text-xs font-bold border border-pubBorder flex items-center justify-center cursor-pointer">5</button></div>
+                                <div class="flex justify-center"><button type="button" id="btn-mesa-6" onclick="toggleMesa('6')" class="mesa-btn w-9 h-9 rounded-full text-xs font-bold border border-pubBorder flex items-center justify-center">6</button></div>
+                                <div class="flex justify-center"><button type="button" id="btn-mesa-5" onclick="toggleMesa('5')" class="mesa-btn w-9 h-9 rounded-full text-xs font-bold border border-pubBorder flex items-center justify-center">5</button></div>
 
-                                <!-- L2 -->
-                                <div class="flex justify-center"><button type="button" id="btn-mesa-16" onclick="toggleMesa('16')" class="mesa-btn w-9 h-9 rounded-full text-xs font-bold border border-pubBorder flex items-center justify-center cursor-pointer">16</button></div>
+                                <div class="flex justify-center"><button type="button" id="btn-mesa-16" onclick="toggleMesa('16')" class="mesa-btn w-9 h-9 rounded-full text-xs font-bold border border-pubBorder flex items-center justify-center">16</button></div>
                                 <div></div>
-                                <div class="flex justify-center"><button type="button" id="btn-mesa-7" onclick="toggleMesa('7')" class="mesa-btn w-9 h-9 rounded-full text-xs font-bold border border-pubBorder flex items-center justify-center cursor-pointer">7</button></div>
-                                <div class="flex justify-center"><button type="button" id="btn-mesa-4" onclick="toggleMesa('4')" class="mesa-btn w-9 h-9 rounded-full text-xs font-bold border border-pubBorder flex items-center justify-center cursor-pointer">4</button></div>
+                                <div class="flex justify-center"><button type="button" id="btn-mesa-7" onclick="toggleMesa('7')" class="mesa-btn w-9 h-9 rounded-full text-xs font-bold border border-pubBorder flex items-center justify-center">7</button></div>
+                                <div class="flex justify-center"><button type="button" id="btn-mesa-4" onclick="toggleMesa('4')" class="mesa-btn w-9 h-9 rounded-full text-xs font-bold border border-pubBorder flex items-center justify-center">4</button></div>
 
-                                <!-- L3 -->
-                                <div class="flex justify-center"><button type="button" id="btn-mesa-15" onclick="toggleMesa('15')" class="mesa-btn w-9 h-9 rounded-full text-xs font-bold border border-pubBorder flex items-center justify-center cursor-pointer">15</button></div>
+                                <div class="flex justify-center"><button type="button" id="btn-mesa-15" onclick="toggleMesa('15')" class="mesa-btn w-9 h-9 rounded-full text-xs font-bold border border-pubBorder flex items-center justify-center">15</button></div>
                                 <div></div>
-                                <div class="flex justify-center"><button type="button" id="btn-mesa-8" onclick="toggleMesa('8')" class="mesa-btn w-9 h-9 rounded-full text-xs font-bold border border-pubBorder flex items-center justify-center cursor-pointer">8</button></div>
-                                <div class="flex justify-center"><button type="button" id="btn-mesa-3" onclick="toggleMesa('3')" class="mesa-btn w-9 h-9 rounded-full text-xs font-bold border border-pubBorder flex items-center justify-center cursor-pointer">3</button></div>
+                                <div class="flex justify-center"><button type="button" id="btn-mesa-8" onclick="toggleMesa('8')" class="mesa-btn w-9 h-9 rounded-full text-xs font-bold border border-pubBorder flex items-center justify-center">8</button></div>
+                                <div class="flex justify-center"><button type="button" id="btn-mesa-3" onclick="toggleMesa('3')" class="mesa-btn w-9 h-9 rounded-full text-xs font-bold border border-pubBorder flex items-center justify-center">3</button></div>
 
-                                <!-- L4 -->
-                                <div class="flex justify-center"><button type="button" id="btn-mesa-14" onclick="toggleMesa('14')" class="mesa-btn w-9 h-9 rounded-full text-xs font-bold border border-pubBorder flex items-center justify-center cursor-pointer">14</button></div>
+                                <div class="flex justify-center"><button type="button" id="btn-mesa-14" onclick="toggleMesa('14')" class="mesa-btn w-9 h-9 rounded-full text-xs font-bold border border-pubBorder flex items-center justify-center">14</button></div>
                                 <div class="flex justify-center"><span class="w-8 h-8 rounded bg-red-900/80 border border-red-700 text-[8px] font-bold text-white flex items-center justify-center">PILAR</span></div>
-                                <div class="flex justify-center"><button type="button" id="btn-mesa-9" onclick="toggleMesa('9')" class="mesa-btn w-9 h-9 rounded-full text-xs font-bold border border-pubBorder flex items-center justify-center cursor-pointer">9</button></div>
-                                <div class="flex justify-center"><button type="button" id="btn-mesa-2" onclick="toggleMesa('2')" class="mesa-btn w-9 h-9 rounded-full text-xs font-bold border border-pubBorder flex items-center justify-center cursor-pointer">2</button></div>
+                                <div class="flex justify-center"><button type="button" id="btn-mesa-9" onclick="toggleMesa('9')" class="mesa-btn w-9 h-9 rounded-full text-xs font-bold border border-pubBorder flex items-center justify-center">9</button></div>
+                                <div class="flex justify-center"><button type="button" id="btn-mesa-2" onclick="toggleMesa('2')" class="mesa-btn w-9 h-9 rounded-full text-xs font-bold border border-pubBorder flex items-center justify-center">2</button></div>
 
-                                <!-- L5 -->
                                 <div></div>
                                 <div></div>
-                                <div class="flex justify-center"><button type="button" id="btn-mesa-10" onclick="toggleMesa('10')" class="mesa-btn w-9 h-9 rounded-full text-xs font-bold border border-pubBorder flex items-center justify-center cursor-pointer">10</button></div>
-                                <div class="flex justify-center"><button type="button" id="btn-mesa-1" onclick="toggleMesa('1')" class="mesa-btn w-9 h-9 rounded-full text-xs font-bold border border-pubBorder flex items-center justify-center cursor-pointer">1</button></div>
+                                <div class="flex justify-center"><button type="button" id="btn-mesa-10" onclick="toggleMesa('10')" class="mesa-btn w-9 h-9 rounded-full text-xs font-bold border border-pubBorder flex items-center justify-center">10</button></div>
+                                <div class="flex justify-center"><button type="button" id="btn-mesa-1" onclick="toggleMesa('1')" class="mesa-btn w-9 h-9 rounded-full text-xs font-bold border border-pubBorder flex items-center justify-center">1</button></div>
                             </div>
 
-                            <!-- Bar -->
                             <div class="w-10 bg-neutral-900 border border-pubBorder rounded-lg flex items-center justify-center">
                                 <span class="text-[10px] font-black text-pubGold [writing-mode:vertical-rl] rotate-180">BAR</span>
                             </div>
                         </div>
 
-                        <!-- Embaixo do mezanino -->
                         <div class="mt-3 pt-2 border-t border-pubBorder/60 flex justify-center gap-4">
-                            <button type="button" id="btn-mesa-11" onclick="toggleMesa('11')" class="mesa-btn w-9 h-9 rounded-full text-xs font-bold border border-pubBorder flex items-center justify-center cursor-pointer">11</button>
-                            <button type="button" id="btn-mesa-12" onclick="toggleMesa('12')" class="mesa-btn w-9 h-9 rounded-full text-xs font-bold border border-pubBorder flex items-center justify-center cursor-pointer">12</button>
-                            <button type="button" id="btn-mesa-13" onclick="toggleMesa('13')" class="mesa-btn w-9 h-9 rounded-full text-xs font-bold border border-pubBorder flex items-center justify-center cursor-pointer">13</button>
+                            <button type="button" id="btn-mesa-11" onclick="toggleMesa('11')" class="mesa-btn w-9 h-9 rounded-full text-xs font-bold border border-pubBorder flex items-center justify-center">11</button>
+                            <button type="button" id="btn-mesa-12" onclick="toggleMesa('12')" class="mesa-btn w-9 h-9 rounded-full text-xs font-bold border border-pubBorder flex items-center justify-center">12</button>
+                            <button type="button" id="btn-mesa-13" onclick="toggleMesa('13')" class="mesa-btn w-9 h-9 rounded-full text-xs font-bold border border-pubBorder flex items-center justify-center">13</button>
                         </div>
                     </div>
+
+                    <!-- ABA 2: MEZANINO -->
+                    <div id="aba-mezanino" class="bg-neutral-950/90 border border-pubBorder rounded-xl p-4 min-h-[440px] hidden flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-center mb-3 pb-2 border-b border-pubBorder">
+                                <span class="text-xs font-bold text-pubGold uppercase">Guarda-Corpo (Visão Palco)</span>
+                                <span class="text-[10px] text-gray-400">23 mesas • 86 lugares</span>
+                            </div>
+
+                            <div class="grid grid-cols-4 sm:grid-cols-6 gap-2.5">
+                                {% for num in range(23, 46) %}
+                                <button type="button" id="btn-mesa-{{ num }}" onclick="toggleMesa('{{ num }}')" class="mesa-btn p-2.5 rounded-lg border border-pubBorder bg-neutral-900 text-xs font-bold flex flex-col items-center justify-center">
+                                    <span>{{ num }}</span>
+                                    <span class="text-[9px] text-gray-500 font-normal">
+                                        {% if num in [28, 27, 45] %}2 lug
+                                        {% elif num in [23, 24, 25, 26, 44] %}4 lug
+                                        {% elif num in [29, 30, 31, 41, 42] %}6 lug
+                                        {% else %}3 lug{% endif %}
+                                    </span>
+                                </button>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
 
                 <!-- Rodapé de Confirmação -->
@@ -285,13 +326,40 @@
         </div>
     </div>
 
-    <!-- Script de Gestão do Salão -->
+    <!-- Script com Bloqueio de Mesas e Modo Edição -->
     <script>
         const mesasOcupadasServidor = {{ mesas_ocupadas | tojson }};
         let mesasSelecionadas = [];
+        let mesasDoClienteEditado = []; // Permite manter as mesas dele caso esteja editando
 
-        function abrirModalCadastro() {
+        function abrirModalNovaReserva() {
+            document.getElementById('modal-titulo').innerText = 'Lançar Nova Reserva no Salão';
+            document.getElementById('form-modal').action = '/admin/reservas/nova';
+            document.getElementById('input-reserva-id').value = '';
+            document.getElementById('campo-nome').value = '';
+            document.getElementById('campo-whatsapp').value = '';
+            document.getElementById('campo-pessoas').value = '4';
+            document.getElementById('campo-aniversario').value = 'Não';
+            
             mesasSelecionadas = [];
+            mesasDoClienteEditado = [];
+            atualizarCores();
+            atualizarResumo();
+            document.getElementById('modal-cadastro').classList.remove('escondido');
+        }
+
+        function abrirModalEditar(id, nome, whatsapp, pessoas, aniversario, mesasAtuais) {
+            document.getElementById('modal-titulo').innerText = `Editar Reserva: ${nome}`;
+            document.getElementById('form-modal').action = '/admin/reservas/editar';
+            document.getElementById('input-reserva-id').value = id;
+            document.getElementById('campo-nome').value = nome;
+            document.getElementById('campo-whatsapp').value = whatsapp === 'None' ? '' : whatsapp;
+            document.getElementById('campo-pessoas').value = pessoas;
+            document.getElementById('campo-aniversario').value = aniversario;
+
+            mesasSelecionadas = mesasAtuais ? mesasAtuais.split(',').map(m => m.trim()).filter(Boolean) : [];
+            mesasDoClienteEditado = [...mesasSelecionadas]; // Libera as mesas dele para ele poder mexer
+            
             atualizarCores();
             atualizarResumo();
             document.getElementById('modal-cadastro').classList.remove('escondido');
@@ -302,36 +370,42 @@
         }
 
         function toggleMesa(num) {
-            if (mesasOcupadasServidor.includes(num) && !mesasSelecionadas.includes(num)) {
-                if (!confirm(`A mesa ${num} já está alocada para outro grupo. Deseja juntar esta mesa também?`)) {
-                    return;
-                }
+            const strNum = String(num);
+            
+            // TRAVA: Se está ocupada por OUTRO cliente, não deixa clicar!
+            if (mesasOcupadasServidor.includes(strNum) && !mesasDoClienteEditado.includes(strNum)) {
+                alert(`⚠️ A mesa ${num} já está reservada por outro cliente e está travada!`);
+                return;
             }
 
-            if (mesasSelecionadas.includes(num)) {
-                mesasSelecionadas = mesasSelecionadas.filter(m => m !== num);
+            if (mesasSelecionadas.includes(strNum)) {
+                mesasSelecionadas = mesasSelecionadas.filter(m => m !== strNum);
             } else {
-                mesasSelecionadas.push(num);
+                mesasSelecionadas.push(strNum);
             }
             atualizarCores();
             atualizarResumo();
         }
 
         function atualizarCores() {
-            for (let i = 1; i <= 22; i++) {
+            for (let i = 1; i <= 45; i++) {
                 const btn = document.getElementById(`btn-mesa-${i}`);
                 if (!btn) continue;
 
                 const strNum = String(i);
+                btn.disabled = false;
+                btn.className = btn.className.replace(/bg-\S+|border-\S+|text-\S+|cursor-\S+|opacity-\S+/g, '');
+
                 if (mesasSelecionadas.includes(strNum)) {
-                    btn.className = btn.className.replace(/bg-\S+|border-\S+|text-\S+/g, '');
-                    btn.classList.add('bg-blue-600', 'border-blue-400', 'text-white');
-                } else if (mesasOcupadasServidor.includes(strNum)) {
-                    btn.className = btn.className.replace(/bg-\S+|border-\S+|text-\S+/g, '');
-                    btn.classList.add('bg-red-950/60', 'border-red-800', 'text-red-400');
+                    // Selecionada (Azul)
+                    btn.classList.add('bg-blue-600', 'border-blue-400', 'text-white', 'cursor-pointer');
+                } else if (mesasOcupadasServidor.includes(strNum) && !mesasDoClienteEditado.includes(strNum)) {
+                    // Ocupada por outro cliente: TRAVADA (Vermelho escuro + Não Clicável)
+                    btn.classList.add('bg-red-950/70', 'border-red-900', 'text-red-500', 'cursor-not-allowed', 'opacity-50');
+                    btn.disabled = true;
                 } else {
-                    btn.className = btn.className.replace(/bg-\S+|border-\S+|text-\S+/g, '');
-                    btn.classList.add('bg-neutral-900', 'border-pubBorder', 'text-gray-300', 'hover:border-pubGold');
+                    // Livre (Padrão Dourado/Escuro)
+                    btn.classList.add('bg-neutral-900', 'border-pubBorder', 'text-gray-300', 'hover:border-pubGold', 'cursor-pointer');
                 }
             }
         }
@@ -350,6 +424,31 @@
                 texto.innerText = 'Nenhuma';
                 btn.disabled = true;
                 btn.className = 'px-5 py-2 rounded-lg bg-neutral-800 text-gray-500 text-xs font-black cursor-not-allowed';
+            }
+        }
+
+        function mudarAbaSetor(setor) {
+            const btnTerreo = document.getElementById('tab-btn-terreo');
+            const btnMezanino = document.getElementById('tab-btn-mezanino');
+            const abaTerreo = document.getElementById('aba-terreo');
+            const abaMezanino = document.getElementById('aba-mezanino');
+
+            if (setor === 'terreo') {
+                abaTerreo.classList.remove('hidden');
+                abaTerreo.classList.add('flex');
+                abaMezanino.classList.add('hidden');
+                abaMezanino.classList.remove('flex');
+
+                btnTerreo.className = 'px-3.5 py-1.5 rounded-lg bg-pubGold text-black font-black text-xs transition';
+                btnMezanino.className = 'px-3.5 py-1.5 rounded-lg bg-neutral-900 border border-pubBorder text-gray-400 font-bold text-xs hover:text-white transition';
+            } else {
+                abaMezanino.classList.remove('hidden');
+                abaMezanino.classList.add('flex');
+                abaTerreo.classList.add('hidden');
+                abaTerreo.classList.remove('flex');
+
+                btnMezanino.className = 'px-3.5 py-1.5 rounded-lg bg-pubGold text-black font-black text-xs transition';
+                btnTerreo.className = 'px-3.5 py-1.5 rounded-lg bg-neutral-900 border border-pubBorder text-gray-400 font-bold text-xs hover:text-white transition';
             }
         }
     </script>

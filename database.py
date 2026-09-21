@@ -69,15 +69,34 @@ def init_db():
         )
     ''')
 
-    # Povoar Mesas se estiver vazio
+    # Povoar Mesas se estiver vazio ou atualizar
     cursor.execute('SELECT COUNT(*) FROM mesas')
-    if cursor.fetchone()[0] == 0:
-        mesas_iniciais = []
+    if cursor.fetchone()[0] < 45:
+        cursor.execute('DELETE FROM mesas') # Limpa para recadastrar todas perfeitamente
+        
+        mesas_completas = []
+        # Térreo: 1 a 17 (Bistrôs 4 lug) e 18 a 22 (Mesas 6 lug)
         for i in range(1, 18):
-            mesas_iniciais.append((str(i), 'Térreo', 4))
+            mesas_completas.append((str(i), 'Térreo', 4))
         for i in range(18, 23):
-            mesas_iniciais.append((str(i), 'Térreo', 6))
-        cursor.executemany('INSERT INTO mesas (identificacao, setor, capacidade) VALUES (?, ?, ?)', mesas_iniciais)
+            mesas_completas.append((str(i), 'Térreo', 6))
+            
+        # Mezanino: 23 a 45 com capacidades reais
+        capacidades_mezanino = {
+            23: 4, 24: 4, 25: 4, 26: 4,
+            27: 2, 28: 2,
+            29: 6, 30: 6, 31: 6,
+            32: 3, 33: 3, 34: 3, 35: 3, 36: 3, 37: 3, 38: 3, 39: 3, 40: 3,
+            41: 6, 42: 6,
+            43: 3,
+            44: 4,
+            45: 2
+        }
+        for num, cap in capacidades_mezanino.items():
+            mesas_completas.append((str(num), 'Mezanino', cap))
+            
+        cursor.executemany('INSERT INTO mesas (identificacao, setor, capacidade) VALUES (?, ?, ?)', mesas_completas)
+        print("-> 45 Mesas cadastradas (Térreo + Mezanino) com sucesso!")
 
     # Povoar Cardápio completo
     cursor.execute('SELECT COUNT(*) FROM cardapio')

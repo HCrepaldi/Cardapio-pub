@@ -1,10 +1,12 @@
 from fastapi import FastAPI, Request, Form, Depends, HTTPException, status
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
 import secrets
 from database import get_db_connection, init_db
 
 app = FastAPI()
+app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
 SENHA_ADMIN = "Giovani57@"
@@ -133,6 +135,33 @@ def cadastrar_reserva_manual(
         INSERT INTO reservas (codigo, show_id, nome_cliente, whatsapp, email, qtd_pessoas, status, aniversario, mesas_alocadas, token_cancelamento)
         VALUES (?, ?, ?, ?, '-', ?, 'Aprovada', ?, ?, ?)
     """, (codigo, show_id, nome_cliente, whatsapp, qtd_pessoas, aniversario, mesas_alocadas, token_fake))
+    
+    conn.commit()
+    conn.close()
+    return RedirectResponse(url=f"/admin?show_id={show_id}", status_code=status.HTTP_303_SEE_OTHER)
+
+# Flávia EDITA uma reserva existente
+@app.post("/admin/reservas/editar")
+def editar_reserva(
+    reserva_id: int = Form(...),
+    nome_cliente: str = Form(...),
+    whatsapp: str = Form(""),
+    qtd_pessoas: int = Form(...),
+    aniversario: str = Form("Não"),
+    mesas_alocadas: str = Form(...),
+    auth: bool = Depends(verificar_autenticacao)
+):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    cursor.execute("""
+        UPDATE reservas 
+        SET nome_cliente = ?, whatsapp = ?, qtd_pessoas = ?, aniversario = ?, mesas_alocadas = ?
+        WHERE id = ?
+    """, (nome_cliente, whatsapp, qtd_pessoas, aniversario, mesas_alocadas, reserva_id))
+    
+    cursor.execute("SELECT show_id FROM reservas WHERE id = ?", (reserva_id,))
+    show_id = cursor.fetchone()["show_id"]
     
     conn.commit()
     conn.close()
