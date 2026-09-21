@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Administrativo - No Black Tie Pub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        pubGold: '#d4af37',
+                        pubDark: '#0e0e10',
+                        pubCard: '#18181b',
+                        pubBorder: '#27272a'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-pubDark text-gray-200 min-h-screen flex items-center justify-center p-4">
+
+    <div class="w-full max-w-md bg-pubCard border border-pubBorder p-8 rounded-2xl shadow-2xl">
+        <div class="text-center mb-6">
+            <span class="text-3xl">🎩🍸</span>
+            <h1 class="text-xl font-black text-pubGold uppercase mt-2 tracking-wider">No Black Tie Pub</h1>
+            <p class="text-xs text-gray-400 mt-1">Acesso Restrito ao Caixa e Gerência</p>
+        </div>
+
+        {% if erro %}
+        <div class="mb-4 bg-red-950/60 border border-red-800 text-red-400 text-xs p-3 rounded-lg text-center font-bold">
+            Senha incorreta! Tente novamente.
+        </div>
+        {% endif %}
+
+        <form action="/login" method="POST" class="space-y-4">
+            <div>
+                <label class="block text-xs uppercase font-bold text-gray-400 mb-1">Senha de Acesso</label>
+                <input type="password" name="senha" required placeholder="Digite a senha..." autofocus class="w-full bg-neutral-900 border border-pubBorder rounded-lg p-3 text-white focus:border-pubGold focus:outline-none text-sm">
+            </div>
+
+            <button type="submit" class="w-full bg-pubGold hover:bg-yellow-600 text-black font-bold py-3 rounded-lg transition duration-200 text-sm uppercase tracking-wider shadow-lg shadow-yellow-950/40">
+                Entrar no Painel
+            </button>
+        </form>
+
+        <div class="text-center mt-6">
+            <a href="/" class="text-xs text-gray-500 hover:text-gray-300 transition">← Voltar ao site público</a>
+        </div>
+    </div>
+
+</body>
+</html>

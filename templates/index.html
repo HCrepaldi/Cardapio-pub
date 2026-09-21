@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>No Black Tie Pub - Reservas & Cardápio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        pubGold: '#d4af37',
+                        pubDark: '#0e0e10',
+                        pubCard: '#18181b',
+                        pubBorder: '#27272a'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-pubDark text-gray-200 min-h-screen font-sans pb-16">
+
+    <!-- Header -->
+    <header class="border-b border-pubBorder bg-neutral-900/90 sticky top-0 z-50 backdrop-blur">
+        <div class="max-w-4xl mx-auto px-4 py-3.5 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <span class="text-2xl">🎩</span>
+                <div>
+                    <h1 class="text-base sm:text-lg font-black text-pubGold uppercase tracking-wider leading-none">No Black Tie Pub</h1>
+                    <span class="text-[10px] text-gray-400">Rock, Chopp & Gastronomia</span>
+                </div>
+            </div>
+            <a href="/cardapio" class="px-3.5 py-1.5 rounded-lg bg-neutral-800 hover:bg-neutral-700 border border-pubGold text-pubGold text-xs font-bold transition flex items-center gap-1.5 shadow-md">
+                🍺 Ver Cardápio
+            </a>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-4 py-8">
+        
+        <!-- Regras da Casa -->
+        <div class="bg-pubCard border border-pubBorder rounded-2xl p-5 mb-8 text-sm">
+            <h2 class="text-base font-bold text-pubGold uppercase tracking-wider mb-2">🕒 Horários & Regras de Reserva</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs sm:text-sm text-gray-300">
+                <div>• <strong>19:30h</strong> — Abertura da casa</div>
+                <div>• <strong>20:30h</strong> — Tolerância máxima (mesas liberadas)</div>
+                <div>• <strong>22:00h</strong> — Show ao vivo</div>
+            </div>
+            <p class="text-[11px] text-gray-400 mt-3 border-t border-pubBorder/60 pt-2">
+                * As reservas são gratuitas. O couvert/entrada é acertado individualmente na saída.
+            </p>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-8 items-start">
+            
+            <!-- Formulário de Solicitação -->
+            <div class="bg-pubCard border border-pubBorder rounded-2xl p-6 shadow-2xl">
+                <h3 class="text-lg font-bold text-white uppercase tracking-wider mb-4">Solicitar Reserva de Mesa</h3>
+
+                <form action="/reservar" method="POST" class="space-y-4">
+                    <div>
+                        <label class="block text-xs uppercase font-bold text-gray-400 mb-1">Escolha a Noite / Banda</label>
+                        <select name="show_id" required class="w-full bg-neutral-900 border border-pubBorder rounded-lg p-3 text-white text-sm focus:border-pubGold focus:outline-none">
+                            {% for s in shows %}
+                                <option value="{{ s.id }}">{{ s.data_show }} — {{ s.banda }}</option>
+                            {% else %}
+                                <option value="" disabled>Nenhum show disponível no momento</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs uppercase font-bold text-gray-400 mb-1">Nome Completo</label>
+                        <input type="text" name="nome_cliente" required placeholder="Seu nome" class="w-full bg-neutral-900 border border-pubBorder rounded-lg p-3 text-white text-sm focus:border-pubGold focus:outline-none">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs uppercase font-bold text-gray-400 mb-1">WhatsApp</label>
+                            <input type="tel" name="whatsapp" required placeholder="(99) 99999-9999" class="w-full bg-neutral-900 border border-pubBorder rounded-lg p-3 text-white text-sm focus:border-pubGold focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs uppercase font-bold text-gray-400 mb-1">Nº de Pessoas</label>
+                            <input type="number" name="qtd_pessoas" min="1" max="150" required value="4" class="w-full bg-neutral-900 border border-pubBorder rounded-lg p-3 text-white text-sm focus:border-pubGold focus:outline-none font-bold">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs uppercase font-bold text-gray-400 mb-1">E-mail</label>
+                        <input type="email" name="email" required placeholder="seu@email.com" class="w-full bg-neutral-900 border border-pubBorder rounded-lg p-3 text-white text-sm focus:border-pubGold focus:outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs uppercase font-bold text-gray-400 mb-1">É comemoração de Aniversário?</label>
+                        <select name="aniversario" class="w-full bg-neutral-900 border border-pubBorder rounded-lg p-3 text-white text-sm focus:border-pubGold focus:outline-none">
+                            <option value="Não">Não</option>
+                            <option value="Sim">Sim, sou o aniversariante 🎂</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="w-full bg-pubGold hover:bg-yellow-600 text-black font-black py-3.5 rounded-lg transition duration-200 text-sm uppercase tracking-wider shadow-lg shadow-yellow-950/40 mt-2">
+                        Solicitar Reserva
+                    </button>
+                </form>
+            </div>
+
+            <!-- Programação do Mês -->
+            <div class="space-y-4">
+                <h3 class="text-lg font-bold text-white uppercase tracking-wider mb-4">Próximos Shows</h3>
+
+                {% for s in shows %}
+                <div class="bg-pubCard border border-pubBorder rounded-2xl p-5 flex items-center justify-between hover:border-neutral-700 transition">
+                    <div>
+                        <span class="text-xs text-pubGold font-black uppercase tracking-widest">{{ s.data_show }}</span>
+                        <h4 class="text-base font-bold text-white mt-0.5">{{ s.banda }}</h4>
+                        <p class="text-xs text-gray-400 mt-1">Abertura: 19:30h • Show: 22h</p>
+                    </div>
+                    <span class="text-[10px] uppercase font-black bg-emerald-950/60 border border-emerald-800 text-emerald-400 px-3 py-1 rounded-full">
+                        Reservas Abertas
+                    </span>
+                </div>
+                {% else %}
+                <div class="bg-pubCard border border-pubBorder rounded-2xl p-6 text-center text-gray-500 text-sm">
+                    A programação do próximo mês será postada em breve!
+                </div>
+                {% endfor %}
+            </div>
+
+        </div>
+    </main>
+
+</body>
+</html>

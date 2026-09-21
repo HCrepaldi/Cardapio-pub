@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cancelar Reserva - No Black Tie Pub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        pubGold: '#d4af37',
+                        pubDark: '#0e0e10',
+                        pubCard: '#18181b',
+                        pubBorder: '#27272a'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-pubDark text-gray-200 min-h-screen flex items-center justify-center p-4 font-sans">
+
+    <div class="w-full max-w-md bg-pubCard border border-pubBorder p-8 rounded-2xl shadow-2xl">
+        
+        <div class="text-center mb-6">
+            <span class="text-3xl">🎩🎸</span>
+            <h1 class="text-xl font-black text-pubGold uppercase mt-2">No Black Tie Pub</h1>
+            <p class="text-xs text-gray-400 mt-1">Gerenciamento de Reserva</p>
+        </div>
+
+        {% if reserva.status == 'Cancelada' %}
+            <div class="bg-red-950/40 border border-red-800 text-red-400 p-4 rounded-xl text-center text-sm font-bold mb-6">
+                Esta reserva já foi cancelada anteriormente.
+            </div>
+            <div class="text-center">
+                <a href="/" class="text-xs text-pubGold hover:underline">← Ir para a página inicial</a>
+            </div>
+        {% else %}
+            <div class="bg-neutral-900 border border-pubBorder p-4 rounded-xl mb-6 text-xs space-y-2">
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Titular:</span>
+                    <span class="font-bold text-white">{{ reserva.nome_cliente }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Show:</span>
+                    <span class="font-bold text-pubGold">{{ reserva.banda }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Data:</span>
+                    <span class="font-bold text-white">{{ reserva.data_show }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Mesa(s):</span>
+                    <span class="font-bold text-white">{{ reserva.mesas_alocadas }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Pessoas:</span>
+                    <span class="font-bold text-white">{{ reserva.qtd_pessoas }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Status Atual:</span>
+                    <span class="font-bold text-green-400">{{ reserva.status }}</span>
+                </div>
+            </div>
+
+            <p class="text-xs text-gray-400 text-center mb-6 leading-relaxed">
+                Tem certeza de que deseja cancelar esta reserva? Ao confirmar, sua(s) mesa(s) será(ão) imediatamente liberada(s) para outros clientes.
+            </p>
+
+            <form action="/cancelar/{{ reserva.token_cancelamento }}/confirmar" method="POST">
+                <button type="submit" class="w-full bg-red-800 hover:bg-red-700 text-white font-bold py-3 rounded-lg transition duration-200 text-xs uppercase tracking-wider shadow-lg shadow-red-950/40">
+                    Confirmar Cancelamento da Reserva
+                </button>
+            </form>
+
+            <div class="text-center mt-4">
+                <a href="/" class="text-xs text-gray-500 hover:text-gray-300 transition">Não quero cancelar, voltar ao site</a>
+            </div>
+        {% endif %}
+
+    </div>
+
+</body>
+</html>
