@@ -326,9 +326,12 @@
         </div>
     </div>
 
-    <!-- Script com Bloqueio de Mesas e Modo Edição -->
+    <!-- Guarda os dados em JSON de forma 100% limpa para o VS Code -->
+    <div id="dados-mesas-ocupadas" data-mesas='{{ mesas_ocupadas | tojson }}' class="hidden"></div>
+
     <script>
-        const mesasOcupadasServidor = {{ mesas_ocupadas | tojson }};
+        const elementoDados = document.getElementById('dados-mesas-ocupadas');
+        const mesasOcupadasServidor = JSON.parse(elementoDados.getAttribute('data-mesas') || '[]');
         let mesasSelecionadas = [];
         let mesasDoClienteEditado = []; // Permite manter as mesas dele caso esteja editando
 
