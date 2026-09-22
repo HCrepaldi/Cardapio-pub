@@ -20,8 +20,18 @@
         }
     </script>
     <style>
-        .mesa-btn { transition: all 0.15s ease-in-out; }
+        .mesa-btn { transition: all 0.15s ease-in-out; user-select: none; }
         #modal-cadastro.escondido { display: none !important; }
+        /* Listras do Vão Central Pé Direito Duplo */
+        .vao-livre {
+            background: repeating-linear-gradient(
+                -45deg,
+                rgba(24, 24, 27, 0.9),
+                rgba(24, 24, 27, 0.9) 12px,
+                rgba(39, 39, 42, 0.6) 12px,
+                rgba(39, 39, 42, 0.6) 24px
+            );
+        }
     </style>
 </head>
 <body class="bg-pubDark text-gray-200 min-h-screen font-sans p-4 sm:p-6 pb-24">
@@ -31,7 +41,7 @@
         <!-- TOPO -->
         <div class="flex flex-wrap justify-between items-center gap-4 mb-6 pb-4 border-b border-pubBorder">
             <div class="flex items-center gap-3">
-                <img src="/static/logo.png" alt="No Black Tie Pub" class="h-10 w-auto object-contain" onerror="this.onerror=null; this.src='/static/logo.svg';">
+                <img src="/static/logo.svg" alt="No Black Tie Pub" class="h-10 w-auto object-contain" onerror="this.onerror=null; this.src='/static/logo.png';">
                 <div>
                     <span class="text-xs font-bold text-pubGold uppercase tracking-widest">Painel Interno</span>
                     <h1 class="text-xl font-black text-white uppercase">No Black Tie Pub</h1>
@@ -81,7 +91,7 @@
             {% if show_atual %}
             <div class="flex items-center gap-4 text-xs">
                 <div>Pessoas Reservadas: <strong class="text-pubGold text-base">{{ total_pessoas }}</strong> / {{ show_atual.limite_capacidade }}</div>
-                <div>Mesas Alocadas: <strong class="text-white text-base">{{ mesas_ocupadas|length }}</strong></div>
+                <div>Mesas Alocadas: <strong class="text-white text-base">{{ mesas_ocupadas|length }}</strong> / 45</div>
             </div>
 
             <button type="button" onclick="abrirModalNovaReserva()" class="bg-pubGold hover:bg-yellow-600 text-black font-black px-4 py-2.5 rounded-lg text-xs uppercase tracking-wider shadow-lg shadow-yellow-950/40 cursor-pointer">
@@ -132,16 +142,12 @@
                             </td>
                             <td class="p-4 text-right">
                                 <div class="flex items-center justify-end gap-3">
-                                    <!-- Botão Editar -->
                                     <button type="button" 
                                             class="text-xs text-pubGold hover:text-yellow-400 font-bold underline cursor-pointer"
                                             onclick="abrirModalEditar('{{ r.id }}', '{{ r.nome_cliente }}', '{{ r.whatsapp }}', '{{ r.qtd_pessoas }}', '{{ r.aniversario }}', '{{ r.mesas_alocadas }}')">
                                         ✏️ Editar
                                     </button>
-                                    
                                     <span class="text-neutral-700">|</span>
-
-                                    <!-- Botão Excluir -->
                                     <form method="POST" action="/admin/reservas/excluir/{{ r.id }}" class="inline" onsubmit="return confirm('Deseja liberar a mesa e excluir a reserva de {{ r.nome_cliente }}?');">
                                         <button type="submit" class="text-xs text-red-500 hover:text-red-400 font-bold underline cursor-pointer">
                                             ✕ Desmarcar
@@ -164,13 +170,13 @@
 
     </div>
 
-    <!-- MODAL (USADO TANTO PARA LANÇAR NOVA QUANTO PARA EDITAR) -->
-    <div id="modal-cadastro" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 escondido flex items-center justify-center p-4">
-        <div class="bg-pubCard border border-pubBorder rounded-2xl max-w-2xl w-full p-5 shadow-2xl overflow-y-auto max-h-[95vh]">
+    <!-- MODAL DO SALÃO (COM PLANTAS DO TÉRREO E MEZANINO) -->
+    <div id="modal-cadastro" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 escondido flex items-center justify-center p-2 sm:p-4">
+        <div class="bg-pubCard border border-pubBorder rounded-2xl max-w-4xl w-full p-4 sm:p-5 shadow-2xl overflow-y-auto max-h-[96vh]">
             
-            <div class="flex justify-between items-center pb-3 border-b border-pubBorder mb-4">
+            <div class="flex justify-between items-center pb-3 border-b border-pubBorder mb-3">
                 <div class="flex items-center gap-3">
-                    <img src="/static/logo.png" alt="Logo" class="h-8 w-auto object-contain" onerror="this.onerror=null; this.src='/static/logo.svg';">
+                    <img src="/static/logo.svg" alt="Logo" class="h-8 w-auto object-contain" onerror="this.onerror=null; this.src='/static/logo.png';">
                     <div>
                         <h3 id="modal-titulo" class="text-base font-bold text-white">Lançar Nova Reserva no Salão</h3>
                         <p class="text-xs text-gray-400">Preencha os dados e escolha a(s) mesa(s)</p>
@@ -209,32 +215,32 @@
                     </div>
                 </div>
 
-                <!-- SELETOR DE ABAS: TÉRREO VS MEZANINO -->
+                <!-- ABAS DE NAVEGAÇÃO -->
                 <div>
-                    <div class="flex justify-between items-center mb-2">
+                    <div class="flex flex-wrap justify-between items-center gap-2 mb-2">
                         <div class="flex gap-2">
-                            <button type="button" id="tab-btn-terreo" onclick="mudarAbaSetor('terreo')" class="px-3.5 py-1.5 rounded-lg bg-pubGold text-black font-black text-xs transition">
-                                Salão Térreo (1 a 22)
+                            <button type="button" id="tab-btn-terreo" onclick="mudarAbaSetor('terreo')" class="px-4 py-2 rounded-lg bg-pubGold text-black font-black text-xs transition">
+                                Salão Térreo (Mesas 1 a 22)
                             </button>
-                            <button type="button" id="tab-btn-mezanino" onclick="mudarAbaSetor('mezanino')" class="px-3.5 py-1.5 rounded-lg bg-neutral-900 border border-pubBorder text-gray-400 font-bold text-xs hover:text-white transition">
-                                Mezanino (23 a 45)
+                            <button type="button" id="tab-btn-mezanino" onclick="mudarAbaSetor('mezanino')" class="px-4 py-2 rounded-lg bg-neutral-900 border border-pubBorder text-gray-400 font-bold text-xs hover:text-white transition">
+                                Mezanino Superior (Mesas 23 a 45)
                             </button>
                         </div>
 
-                        <div class="flex gap-2 text-[10px]">
+                        <div class="flex gap-3 text-[10px]">
                             <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded bg-blue-600 inline-block"></span> Escolha</span>
                             <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded bg-red-950/80 border border-red-800 inline-block"></span> Ocupada</span>
+                            <span class="flex items-center gap-1"><span class="w-2.5 h-1 rounded bg-purple-500 inline-block"></span> TV Show</span>
                         </div>
                     </div>
 
-                    <!-- ABA 1: SALÃO TÉRREO -->
-                    <div id="aba-terreo" class="bg-neutral-950/90 border border-pubBorder rounded-xl p-3 min-h-[440px] flex flex-col justify-between">
+                    <!-- 1. PLANTA BAIXA: TÉRREO -->
+                    <div id="aba-terreo" class="bg-neutral-950/90 border border-pubBorder rounded-xl p-3 min-h-[460px] flex flex-col justify-between">
                         <div class="bg-neutral-900 border border-red-700/80 rounded py-1.5 text-center text-xs font-black text-red-400 uppercase tracking-widest mb-3">
                             🎸 P A L C O 🎤
                         </div>
 
                         <div class="flex gap-2 flex-1">
-                            <!-- Mesas Grandes (18 a 22) -->
                             <div class="flex flex-col justify-between w-16 py-1">
                                 {% for num in range(18, 23) %}
                                 <button type="button" id="btn-mesa-{{ num }}" onclick="toggleMesa('{{ num }}')" class="mesa-btn w-14 h-8 rounded text-xs font-bold border border-pubBorder flex items-center justify-center">
@@ -243,7 +249,6 @@
                                 {% endfor %}
                             </div>
 
-                            <!-- Bistrôs e Pilares -->
                             <div class="flex-1 grid grid-cols-4 gap-2 items-center px-1">
                                 <div class="flex justify-center"><button type="button" id="btn-mesa-17" onclick="toggleMesa('17')" class="mesa-btn w-9 h-9 rounded-full text-xs font-bold border border-pubBorder flex items-center justify-center">17</button></div>
                                 <div class="flex justify-center"><span class="w-8 h-8 rounded bg-red-900/80 border border-red-700 text-[8px] font-bold text-white flex items-center justify-center">PILAR</span></div>
@@ -283,28 +288,144 @@
                         </div>
                     </div>
 
-                    <!-- ABA 2: MEZANINO -->
-                    <div id="aba-mezanino" class="bg-neutral-950/90 border border-pubBorder rounded-xl p-4 min-h-[440px] hidden flex-col justify-between">
-                        <div>
-                            <div class="flex justify-between items-center mb-3 pb-2 border-b border-pubBorder">
-                                <span class="text-xs font-bold text-pubGold uppercase">Guarda-Corpo (Visão Palco)</span>
-                                <span class="text-[10px] text-gray-400">23 mesas • 86 lugares</span>
+                    <!-- 2. PLANTA BAIXA: MEZANINO REAL (DESENHO EXATO) -->
+                    <div id="aba-mezanino" class="bg-neutral-950/90 border border-pubBorder rounded-xl p-3 min-h-[460px] hidden flex-col justify-between">
+                        
+                        <div class="grid grid-cols-12 gap-3 items-stretch">
+                            
+                            <!-- LATERAL ESQUERDA: Mesas 28, 27 (com TV) + Grandes 29, 30, 31 + Diagonal 32 -->
+                            <div class="col-span-3 flex flex-col justify-between space-y-3">
+                                <!-- Mesas 28 e 27 com TV ao vivo atrás -->
+                                <div>
+                                    <div class="w-full bg-purple-600/80 text-white text-[9px] font-bold text-center py-0.5 rounded-t tracking-wider">
+                                        📺 TV AO VIVO
+                                    </div>
+                                    <div class="flex gap-1.5 border border-purple-500/50 p-1.5 rounded-b bg-purple-950/20">
+                                        <button type="button" id="btn-mesa-28" onclick="toggleMesa('28')" class="mesa-btn flex-1 h-8 rounded text-xs font-bold border border-pubBorder flex items-center justify-center">28 (2)</button>
+                                        <button type="button" id="btn-mesa-27" onclick="toggleMesa('27')" class="mesa-btn flex-1 h-8 rounded text-xs font-bold border border-pubBorder flex items-center justify-center">27 (2)</button>
+                                    </div>
+                                </div>
+
+                                <!-- Mesas Grandes de 6 lugares -->
+                                <button type="button" id="btn-mesa-29" onclick="toggleMesa('29')" class="mesa-btn w-full h-10 rounded-lg text-xs font-bold border border-pubBorder flex items-center justify-center">
+                                    Mesa 29 (6 lug)
+                                </button>
+                                <button type="button" id="btn-mesa-30" onclick="toggleMesa('30')" class="mesa-btn w-full h-10 rounded-lg text-xs font-bold border border-pubBorder flex items-center justify-center">
+                                    Mesa 30 (6 lug)
+                                </button>
+                                <button type="button" id="btn-mesa-31" onclick="toggleMesa('31')" class="mesa-btn w-full h-10 rounded-lg text-xs font-bold border border-pubBorder flex items-center justify-center">
+                                    Mesa 31 (6 lug)
+                                </button>
+
+                                <!-- Mesa 32 Diagonal -->
+                                <div class="pt-2">
+                                    <button type="button" id="btn-mesa-32" onclick="toggleMesa('32')" class="mesa-btn w-full h-8 rounded text-xs font-bold border border-pubBorder flex items-center justify-center rotate-[-12deg]">
+                                        Mesa 32 (3 lug)
+                                    </button>
+                                </div>
                             </div>
 
-                            <div class="grid grid-cols-4 sm:grid-cols-6 gap-2.5">
-                                {% for num in range(23, 46) %}
-                                <button type="button" id="btn-mesa-{{ num }}" onclick="toggleMesa('{{ num }}')" class="mesa-btn p-2.5 rounded-lg border border-pubBorder bg-neutral-900 text-xs font-bold flex flex-col items-center justify-center">
-                                    <span>{{ num }}</span>
-                                    <span class="text-[9px] text-gray-500 font-normal">
-                                        {% if num in [28, 27, 45] %}2 lug
-                                        {% elif num in [23, 24, 25, 26, 44] %}4 lug
-                                        {% elif num in [29, 30, 31, 41, 42] %}6 lug
-                                        {% else %}3 lug{% endif %}
-                                    </span>
-                                </button>
-                                {% endfor %}
+                            <!-- CENTRO: VÃO CENTRAL LIVRE PÉ DIREITO DUPLO + GUARDA-CORPOS -->
+                            <div class="col-span-5 flex flex-col justify-between">
+                                <!-- Topo do Vão com Visão pro Palco -->
+                                <div class="bg-neutral-900 border-2 border-red-700/80 rounded py-1 text-center text-[10px] font-black text-red-400 uppercase tracking-widest">
+                                    🎸 VISÃO DO PALCO (VÃO LIVRE) 🎤
+                                </div>
+
+                                <!-- O Vão Aberto com Pé Direito Duplo -->
+                                <div class="vao-livre flex-1 my-2 rounded-xl border border-dashed border-neutral-700 flex flex-col items-center justify-center p-3 text-center">
+                                    <span class="text-xs font-black text-pubGold/90 uppercase tracking-widest">VÃO CENTRAL</span>
+                                    <span class="text-[9px] text-gray-400 mt-1">Pé-Direito Duplo • Aberto para o Térreo</span>
+                                </div>
+
+                                <!-- Guarda-Corpo Inferior: Mesas 26, 25 (diagonal) e 24, 23 (frontal) -->
+                                <div class="border-t-2 border-pubGold/60 pt-1.5 bg-neutral-900/80 p-1.5 rounded-lg">
+                                    <span class="block text-[8px] font-bold text-pubGold uppercase mb-1 text-center">Guarda-Corpo Frontal</span>
+                                    <div class="flex gap-1.5">
+                                        <button type="button" id="btn-mesa-26" onclick="toggleMesa('26')" class="mesa-btn flex-1 h-7 rounded text-[11px] font-bold border border-pubBorder flex items-center justify-center">26</button>
+                                        <button type="button" id="btn-mesa-25" onclick="toggleMesa('25')" class="mesa-btn flex-1 h-7 rounded text-[11px] font-bold border border-pubBorder flex items-center justify-center">25</button>
+                                        <button type="button" id="btn-mesa-24" onclick="toggleMesa('24')" class="mesa-btn flex-1 h-7 rounded text-[11px] font-bold border border-pubBorder flex items-center justify-center">24</button>
+                                        <button type="button" id="btn-mesa-23" onclick="toggleMesa('23')" class="mesa-btn flex-1 h-7 rounded text-[11px] font-bold border border-pubBorder flex items-center justify-center">23</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- LATERAL DIREITA: Corredor, Guarda-corpo lateral, Mesa 44, Fumantes, Bar e Sinuca -->
+                            <div class="col-span-4 flex flex-col justify-between space-y-2">
+                                
+                                <!-- Topo Direito: Mesa 44 com TV + Área Fumantes Externa -->
+                                <div class="flex gap-2">
+                                    <div class="flex-1">
+                                        <div class="w-full bg-purple-600/80 text-white text-[8px] font-bold text-center py-0.5 rounded-t">📺 TV</div>
+                                        <button type="button" id="btn-mesa-44" onclick="toggleMesa('44')" class="mesa-btn w-full h-8 rounded-b text-[11px] font-bold border border-pubBorder flex items-center justify-center">44 (4)</button>
+                                    </div>
+                                    <!-- Verde Claro: Área Fumantes -->
+                                    <div class="flex-1 bg-emerald-950/60 border border-emerald-600/80 rounded-lg p-1 text-center flex flex-col justify-center">
+                                        <span class="text-[9px] font-black text-emerald-400 leading-tight uppercase">Área Fumante</span>
+                                        <span class="text-[8px] text-emerald-300/80">Externa 🚬</span>
+                                    </div>
+                                </div>
+
+                                <!-- Bloco de Mesas: Guarda-Corpo Direito (39, 38, 37) vs Parede (43, 42, 41) -->
+                                <div class="flex gap-2 bg-neutral-900/60 p-1.5 rounded-lg border border-pubBorder">
+                                    <!-- Guarda-corpo com visão pro vão -->
+                                    <div class="flex-1 space-y-1.5">
+                                        <span class="block text-[8px] font-bold text-pubGold text-center">Visão Vão</span>
+                                        <button type="button" id="btn-mesa-39" onclick="toggleMesa('39')" class="mesa-btn w-full h-7 rounded text-[11px] font-bold border border-pubBorder flex items-center justify-center">39 (3)</button>
+                                        <button type="button" id="btn-mesa-38" onclick="toggleMesa('38')" class="mesa-btn w-full h-7 rounded text-[11px] font-bold border border-pubBorder flex items-center justify-center">38 (3)</button>
+                                        <button type="button" id="btn-mesa-37" onclick="toggleMesa('37')" class="mesa-btn w-full h-7 rounded text-[11px] font-bold border border-pubBorder flex items-center justify-center">37 (3)</button>
+                                    </div>
+                                    <!-- Parede / Divisória -->
+                                    <div class="flex-1 space-y-1.5">
+                                        <span class="block text-[8px] font-bold text-gray-400 text-center">Parede</span>
+                                        <button type="button" id="btn-mesa-43" onclick="toggleMesa('43')" class="mesa-btn w-full h-7 rounded text-[11px] font-bold border border-pubBorder flex items-center justify-center">43 (3)</button>
+                                        <button type="button" id="btn-mesa-42" onclick="toggleMesa('42')" class="mesa-btn w-full h-7 rounded text-[11px] font-bold border border-pubBorder flex items-center justify-center">42 (6)</button>
+                                        <button type="button" id="btn-mesa-41" onclick="toggleMesa('41')" class="mesa-btn w-full h-7 rounded text-[11px] font-bold border border-pubBorder flex items-center justify-center">41 (6)</button>
+                                    </div>
+                                </div>
+
+                                <!-- Escada de Acesso e Mesa 40 -->
+                                <div class="flex gap-2 items-center">
+                                    <div class="bg-amber-950/60 border border-amber-600/70 text-amber-300 text-[9px] font-black p-1.5 rounded flex-1 text-center">
+                                        ▲ ESCADA ACESSO
+                                    </div>
+                                    <button type="button" id="btn-mesa-40" onclick="toggleMesa('40')" class="mesa-btn w-14 h-8 rounded text-[11px] font-bold border border-pubBorder flex items-center justify-center">40 (3)</button>
+                                </div>
+
+                                <!-- Fundo Direito: Mesa 45 (TV) + Mesa de Bilhar (Verde Escuro) + Bar Mezanino -->
+                                <div class="flex gap-2 items-stretch">
+                                    <!-- Mesa 45 com TV -->
+                                    <div class="w-14">
+                                        <div class="w-full bg-purple-600/80 text-white text-[7px] font-bold text-center py-0.5 rounded-t">📺 TV</div>
+                                        <button type="button" id="btn-mesa-45" onclick="toggleMesa('45')" class="mesa-btn w-full h-8 rounded-b text-[10px] font-bold border border-pubBorder flex items-center justify-center">45 (2)</button>
+                                    </div>
+
+                                    <!-- Verde Escuro: Mesa de Bilhar / Sinuca -->
+                                    <div class="flex-1 bg-green-900 border border-green-700 rounded-lg p-1 text-center flex flex-col justify-center shadow-inner">
+                                        <span class="text-[9px] font-black text-white leading-tight uppercase">🎱 BILHAR</span>
+                                        <span class="text-[7px] text-green-200">Sinuca</span>
+                                    </div>
+
+                                    <!-- Bar Mezanino -->
+                                    <div class="w-10 bg-neutral-900 border border-pubBorder rounded-lg flex items-center justify-center">
+                                        <span class="text-[9px] font-black text-pubGold [writing-mode:vertical-rl] rotate-180">BAR MEZANINO</span>
+                                    </div>
+                                </div>
+
                             </div>
                         </div>
+
+                        <!-- LINHA INFERIOR DO MEZANINO: Bistrôs 33, 34, 35, 36 -->
+                        <div class="mt-3 pt-2 border-t border-pubBorder/60 flex justify-between items-center px-4">
+                            <span class="text-[10px] font-bold text-gray-400 uppercase">Fundo do Mezanino:</span>
+                            <div class="flex gap-4">
+                                <button type="button" id="btn-mesa-33" onclick="toggleMesa('33')" class="mesa-btn w-9 h-9 rounded-full text-xs font-bold border border-pubBorder flex items-center justify-center">33</button>
+                                <button type="button" id="btn-mesa-34" onclick="toggleMesa('34')" class="mesa-btn w-9 h-9 rounded-full text-xs font-bold border border-pubBorder flex items-center justify-center">34</button>
+                                <button type="button" id="btn-mesa-35" onclick="toggleMesa('35')" class="mesa-btn w-9 h-9 rounded-full text-xs font-bold border border-pubBorder flex items-center justify-center">35</button>
+                                <button type="button" id="btn-mesa-36" onclick="toggleMesa('36')" class="mesa-btn w-9 h-9 rounded-full text-xs font-bold border border-pubBorder flex items-center justify-center">36</button>
+                            </div>
+                        </div>
+
                     </div>
 
                 </div>
@@ -312,7 +433,7 @@
                 <!-- Rodapé de Confirmação -->
                 <div class="flex justify-between items-center pt-2 border-t border-pubBorder">
                     <div class="text-xs">
-                        <span class="text-gray-400">Mesa(s):</span>
+                        <span class="text-gray-400">Mesa(s) Selecionada(s):</span>
                         <strong id="texto-mesas-cadastro" class="text-pubGold text-sm ml-1">Nenhuma</strong>
                     </div>
 
@@ -326,14 +447,15 @@
         </div>
     </div>
 
-    <!-- Guarda os dados em JSON de forma 100% limpa para o VS Code -->
+    <!-- Dados das Mesas Ocupadas da Noite (JSON Limpo) -->
     <div id="dados-mesas-ocupadas" data-mesas='{{ mesas_ocupadas | tojson }}' class="hidden"></div>
 
     <script>
         const elementoDados = document.getElementById('dados-mesas-ocupadas');
         const mesasOcupadasServidor = JSON.parse(elementoDados.getAttribute('data-mesas') || '[]');
+        
         let mesasSelecionadas = [];
-        let mesasDoClienteEditado = []; // Permite manter as mesas dele caso esteja editando
+        let mesasDoClienteEditado = [];
 
         function abrirModalNovaReserva() {
             document.getElementById('modal-titulo').innerText = 'Lançar Nova Reserva no Salão';
@@ -361,7 +483,7 @@
             document.getElementById('campo-aniversario').value = aniversario;
 
             mesasSelecionadas = mesasAtuais ? mesasAtuais.split(',').map(m => m.trim()).filter(Boolean) : [];
-            mesasDoClienteEditado = [...mesasSelecionadas]; // Libera as mesas dele para ele poder mexer
+            mesasDoClienteEditado = [...mesasSelecionadas];
             
             atualizarCores();
             atualizarResumo();
@@ -375,7 +497,6 @@
         function toggleMesa(num) {
             const strNum = String(num);
             
-            // TRAVA: Se está ocupada por OUTRO cliente, não deixa clicar!
             if (mesasOcupadasServidor.includes(strNum) && !mesasDoClienteEditado.includes(strNum)) {
                 alert(`⚠️ A mesa ${num} já está reservada por outro cliente e está travada!`);
                 return;
@@ -400,14 +521,11 @@
                 btn.className = btn.className.replace(/bg-\S+|border-\S+|text-\S+|cursor-\S+|opacity-\S+/g, '');
 
                 if (mesasSelecionadas.includes(strNum)) {
-                    // Selecionada (Azul)
                     btn.classList.add('bg-blue-600', 'border-blue-400', 'text-white', 'cursor-pointer');
                 } else if (mesasOcupadasServidor.includes(strNum) && !mesasDoClienteEditado.includes(strNum)) {
-                    // Ocupada por outro cliente: TRAVADA (Vermelho escuro + Não Clicável)
                     btn.classList.add('bg-red-950/70', 'border-red-900', 'text-red-500', 'cursor-not-allowed', 'opacity-50');
                     btn.disabled = true;
                 } else {
-                    // Livre (Padrão Dourado/Escuro)
                     btn.classList.add('bg-neutral-900', 'border-pubBorder', 'text-gray-300', 'hover:border-pubGold', 'cursor-pointer');
                 }
             }
@@ -442,16 +560,16 @@
                 abaMezanino.classList.add('hidden');
                 abaMezanino.classList.remove('flex');
 
-                btnTerreo.className = 'px-3.5 py-1.5 rounded-lg bg-pubGold text-black font-black text-xs transition';
-                btnMezanino.className = 'px-3.5 py-1.5 rounded-lg bg-neutral-900 border border-pubBorder text-gray-400 font-bold text-xs hover:text-white transition';
+                btnTerreo.className = 'px-4 py-2 rounded-lg bg-pubGold text-black font-black text-xs transition';
+                btnMezanino.className = 'px-4 py-2 rounded-lg bg-neutral-900 border border-pubBorder text-gray-400 font-bold text-xs hover:text-white transition';
             } else {
                 abaMezanino.classList.remove('hidden');
                 abaMezanino.classList.add('flex');
                 abaTerreo.classList.add('hidden');
                 abaTerreo.classList.remove('flex');
 
-                btnMezanino.className = 'px-3.5 py-1.5 rounded-lg bg-pubGold text-black font-black text-xs transition';
-                btnTerreo.className = 'px-3.5 py-1.5 rounded-lg bg-neutral-900 border border-pubBorder text-gray-400 font-bold text-xs hover:text-white transition';
+                btnMezanino.className = 'px-4 py-2 rounded-lg bg-pubGold text-black font-black text-xs transition';
+                btnTerreo.className = 'px-4 py-2 rounded-lg bg-neutral-900 border border-pubBorder text-gray-400 font-bold text-xs hover:text-white transition';
             }
         }
     </script>
