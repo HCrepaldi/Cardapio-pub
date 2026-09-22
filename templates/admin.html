@@ -227,7 +227,7 @@
                     Ver Cardápio Digital ↗
                 </a>
                 {% if show_atual %}
-                <a href="/admin/imprimir/{{ show_atual.id }}" target="_blank" class="px-4 py-2 bg-pubGold hover:bg-yellow-600 text-black text-xs font-black rounded-lg transition flex items-center gap-1.5 shadow-lg shadow-yellow-950/40">
+                <a href="/admin/imprimir/{{ show_atual.id }}" target="_blank" class="px-4 py-2 bg-pubGold hover:bg-pubRedHover text-white text-xs font-black rounded-lg transition flex items-center gap-1.5 shadow-lg shadow-yellow-950/40">
                     🖨️ Imprimir 80mm
                 </a>
                 {% endif %}
@@ -249,27 +249,42 @@
             </form>
         </div>
 
-        <!-- SELETOR DA NOITE & CONTADORES -->
+        <!-- SELETOR DA NOITE (CRONOLÓGICO) & BOTÃO EXCLUIR SHOW -->
         <div class="bg-pubCard border border-pubBorder p-4 rounded-xl mb-6 flex flex-wrap items-center justify-between gap-4">
-            <form method="GET" action="/admin" class="flex items-center gap-3">
-                <label class="text-xs font-bold uppercase text-pubGold">Data do Show:</label>
-                <select name="show_id" onchange="this.form.submit()" class="bg-neutral-900 border border-pubBorder text-white rounded-lg px-3 py-2 text-sm focus:border-pubGold focus:outline-none">
-                    {% for s in shows %}
-                        <option value="{{ s.id }}" {% if show_atual and s.id == show_atual.id %}selected{% endif %}>
-                            {{ s.data_show }} — {{ s.banda }}
-                        </option>
-                    {% endfor %}
-                </select>
-            </form>
+            
+            <!-- Seletor + Ação de Excluir -->
+            <div class="flex items-center gap-2">
+                <form method="GET" action="/admin" class="flex items-center gap-2">
+                    <label class="text-xs font-bold uppercase text-pubGold">Data do Show:</label>
+                    <select name="show_id" onchange="this.form.submit()" class="bg-neutral-900 border border-pubBorder text-white rounded-lg px-3 py-2 text-xs sm:text-sm focus:border-pubGold focus:outline-none">
+                        {% for s in shows %}
+                            <option value="{{ s.id }}" {% if show_atual and s.id == show_atual.id %}selected{% endif %}>
+                                {{ s.data_show }} — {{ s.banda }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </form>
 
-            {% if show_atual %}
-            <div class="flex items-center gap-4 text-xs">
-                <div>Pessoas Reservadas: <strong class="text-pubGold text-base">{{ total_pessoas }}</strong> / {{ show_atual.limite_capacidade }}</div>
-                <div>Mesas Alocadas: <strong class="text-white text-base">{{ mesas_ocupadas|length }}</strong> / 45</div>
+                {% if show_atual %}
+                <!-- Botão Excluir o Show Selecionado com Aviso de Confirmação -->
+                <form method="POST" action="/admin/shows/excluir/{{ show_atual.id }}" class="inline" onsubmit="return confirm('⚠️ ATENÇÃO: Deseja realmente excluir o show \'{{ show_atual.banda }}\' de {{ show_atual.data_show }} e todas as reservas dele?');">
+                    <button type="submit" title="Excluir este show da agenda" class="p-2 rounded-lg bg-red-950/60 hover:bg-red-900 border border-red-800 text-red-300 text-xs font-bold transition flex items-center gap-1 cursor-pointer">
+                        🗑️ <span class="hidden sm:inline">Excluir Data</span>
+                    </button>
+                </form>
+                {% endif %}
             </div>
 
-            <button type="button" onclick="abrirModalNovaReserva()" class="bg-pubGold hover:bg-yellow-600 text-black font-black px-4 py-2.5 rounded-lg text-xs uppercase tracking-wider shadow-lg shadow-yellow-950/40 cursor-pointer">
-                ➕ Lançar Reserva (Instagram)
+            {% if show_atual %}
+            <!-- Contadores de Ocupação -->
+            <div class="flex items-center gap-4 text-xs">
+                <div>Pessoas: <strong class="text-pubGold text-base">{{ total_pessoas }}</strong> / {{ show_atual.limite_capacidade }}</div>
+                <div>Mesas: <strong class="text-white text-base">{{ mesas_ocupadas|length }}</strong> / 45</div>
+            </div>
+
+            <!-- Botão Lançar Reserva -->
+            <button type="button" onclick="abrirModalNovaReserva()" class="bg-pubGold hover:bg-pubRedHover text-white font-white px-4 py-2.5 rounded-lg text-xs uppercase tracking-wider shadow-lg shadow-red-950/40 cursor-pointer">
+                Lançar Reserva (Instagram)
             </button>
             {% endif %}
         </div>

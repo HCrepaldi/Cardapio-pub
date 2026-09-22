@@ -88,7 +88,8 @@ def painel_admin(request: Request, show_id: int = None, auth: bool = Depends(ver
     conn = get_db_connection()
     cursor = conn.cursor()
     
-    shows = cursor.execute("SELECT * FROM shows ORDER BY data_show DESC").fetchall()
+    # ORDEM ASCENDENTE: O show mais próximo fica em primeiro lugar!
+    shows = cursor.execute("SELECT * FROM shows ORDER BY data_show ASC").fetchall()
     
     if not show_id and shows:
         show_id = shows[0]["id"]
@@ -124,6 +125,17 @@ def painel_admin(request: Request, show_id: int = None, auth: bool = Depends(ver
             "total_pessoas": total_pessoas
         }
     )
+
+# Rota para Excluir Show e suas reservas vinculadas
+@app.post("/admin/shows/excluir/{show_id}")
+def excluir_show(show_id: int, auth: bool = Depends(verificar_autenticacao)):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM reservas WHERE show_id = ?", (show_id,))
+    cursor.execute("DELETE FROM shows WHERE id = ?", (show_id,))
+    conn.commit()
+    conn.close()
+    return RedirectResponse(url="/admin", status_code=status.HTTP_303_SEE_OTHER)
 
 # Flávia cadastra uma nova reserva vinda do Instagram
 @app.post("/admin/reservas/nova")
@@ -202,16 +214,6 @@ def criar_show(data_show: str = Form(...), banda: str = Form(...), limite_capaci
         conn.commit()
     except Exception:
         pass
-    conn.close()
-    return RedirectResponse(url="/admin", status_code=status.HTTP_303_SEE_OTHER)
-
-@app.post("/admin/shows/excluir/{show_id}")
-def excluir_show(show_id: int, auth: bool = Depends(verificar_autenticacao)):
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("DELETE FROM reservas WHERE show_id = ?", (show_id,))
-    cursor.execute("DELETE FROM shows WHERE id = ?", (show_id,))
-    conn.commit()
     conn.close()
     return RedirectResponse(url="/admin", status_code=status.HTTP_303_SEE_OTHER)
 
