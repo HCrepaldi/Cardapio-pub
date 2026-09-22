@@ -3,11 +3,22 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 import secrets
+import os
 from database import get_db_connection, init_db
 
 app = FastAPI()
-app.mount("/static", StaticFiles(directory="static"), name="static")
-templates = Jinja2Templates(directory="templates")
+
+# Pega o caminho exato onde o main.py está localizado na nuvem
+DIRETORIO_BASE = os.path.dirname(os.path.abspath(__file__))
+pasta_static = os.path.join(DIRETORIO_BASE, "static")
+
+# Cria a pasta se ela não existir por algum motivo
+os.makedirs(pasta_static, exist_ok=True)
+
+# Monta a pasta de arquivos estáticos de forma 100% segura
+app.mount("/static", StaticFiles(directory=pasta_static), name="static")
+
+templates = Jinja2Templates(directory=os.path.join(DIRETORIO_BASE, "templates"))
 
 SENHA_ADMIN = "Giovani57@"
 
