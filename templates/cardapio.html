@@ -27,26 +27,29 @@
 </head>
 <body class="bg-pubDark text-gray-200 min-h-screen font-sans pb-24">
 
-    <!-- Topo com Logo Oficial -->
-    <header class="border-b border-pubBorder bg-neutral-900/90 sticky top-0 z-50 backdrop-blur">
-        <div class="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
-            <div class="flex items-center gap-3">
-                <img src="/static/logo.svg" alt="No Black Tie Pub" class="h-10 w-auto object-contain">
+    <!-- Topo Oficial -->
+    <header class="border-b border-pubBorder bg-neutral-900/95 sticky top-0 z-50 backdrop-blur">
+        <div class="max-w-4xl mx-auto px-4 py-2.5 flex justify-between items-center gap-3">
+            
+            <!-- Logo + Nome -->
+            <div class="flex items-center gap-2.5">
+                <img src="/static/logo.svg" alt="No Black Tie Pub" class="h-10 w-10 sm:h-11 sm:w-11 object-contain shrink-0">
                 <div>
                     <h1 class="text-base sm:text-lg font-black text-pubGold uppercase tracking-wider leading-none">No Black Tie Pub</h1>
                     <span class="text-[10px] text-gray-400">Cardápio Oficial</span>
                 </div>
             </div>
             
-            <a href="https://instagram.com/noblacktie_pub" target="_blank" class="text-xs bg-neutral-800 hover:bg-neutral-700 text-gray-300 font-bold px-3 py-1.5 rounded-lg border border-pubBorder transition">
+            <!-- Link Instagram -->
+            <a href="https://instagram.com/noblacktie_pub" target="_blank" class="text-[11px] bg-neutral-800 hover:bg-neutral-700 text-gray-300 font-bold px-2.5 py-1.5 rounded-lg border border-pubBorder transition shrink-0">
                 @noblacktie_pub ↗
             </a>
         </div>
 
-        <!-- Menu de Categorias -->
+        <!-- Menu de Categorias Deslizante -->
         <div class="border-t border-pubBorder/60 bg-neutral-950/80 px-4 py-2 overflow-x-auto no-scrollbar flex gap-2 max-w-4xl mx-auto">
             {% for cat in categorias %}
-            <a href="#cat-{{ loop.index }}" class="whitespace-nowrap px-3 py-1.5 rounded-full bg-neutral-900 hover:bg-neutral-800 border border-pubBorder text-xs font-bold text-gray-300 hover:text-pubGold transition">
+            <a href="#cat-{{ loop.index }}" class="whitespace-nowrap px-3 py-1 rounded-full bg-neutral-900 hover:bg-neutral-800 border border-pubBorder text-xs font-bold text-gray-300 hover:text-pubGold transition">
                 {{ cat }}
             </a>
             {% endfor %}
