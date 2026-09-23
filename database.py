@@ -20,6 +20,31 @@ USANDO_POSTGRES = bool(DATABASE_URL)
 
 
 # ===========================================================================
+# LINHA COMPATÍVEL: aceita acesso por NOME (row["coluna"]) e por ÍNDICE (row[0])
+# ---------------------------------------------------------------------------
+# O sqlite3.Row permite os dois jeitos. O dict_row do psycopg só permite por
+# nome; então uma consulta como SUM(...) acessada com [0] quebrava (KeyError).
+# Esta classe replica o comportamento do sqlite3.Row para o PostgreSQL.
+# ===========================================================================
+class _Row(dict):
+    def __getitem__(self, chave):
+        # Se vier um número (ou fatia), acessa pela posição da coluna
+        if isinstance(chave, (int, slice)):
+            return list(self.values())[chave]
+        return super().__getitem__(chave)
+
+
+def _row_compat_factory(cursor):
+    """Row factory do psycopg que devolve objetos _Row (nome OU índice)."""
+    cols = [d.name for d in (cursor.description or [])]
+
+    def gerar(valores):
+        return _Row(zip(cols, valores))
+
+    return gerar
+
+
+# ===========================================================================
 # WRAPPERS DE COMPATIBILIDADE (só usados no modo PostgreSQL)
 # ===========================================================================
 class _CursorWrapper:
@@ -94,10 +119,10 @@ class _ConnectionWrapper:
 def get_db_connection():
     if USANDO_POSTGRES:
         import psycopg
-        from psycopg.rows import dict_row
 
-        # dict_row faz row["coluna"] funcionar igual ao sqlite3.Row
-        conn = psycopg.connect(DATABASE_URL, row_factory=dict_row)
+        # _row_compat_factory faz row["coluna"] E row[0] funcionarem,
+        # igual ao sqlite3.Row (evita KeyError em consultas tipo SUM()).
+        conn = psycopg.connect(DATABASE_URL, row_factory=_row_compat_factory)
         return _ConnectionWrapper(conn)
     else:
         import sqlite3

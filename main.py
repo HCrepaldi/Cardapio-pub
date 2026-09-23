@@ -20,7 +20,11 @@ app.mount("/static", StaticFiles(directory=pasta_static), name="static")
 
 templates = Jinja2Templates(directory=os.path.join(DIRETORIO_BASE, "templates"))
 
-SENHA_ADMIN = "Giovani57@"
+# A senha do admin vem de uma variável de ambiente (NUNCA fica no código).
+# - Em produção (Render): defina a variável SENHA_ADMIN no painel.
+# - No seu PC: defina no terminal ou num arquivo .env (que o .gitignore bloqueia).
+# Se a variável não existir, usa um valor padrão só para desenvolvimento local.
+SENHA_ADMIN = os.environ.get("SENHA_ADMIN", "troque-esta-senha-no-render")
 
 @app.on_event("startup")
 def startup():
