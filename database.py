@@ -1,48 +1,169 @@
-import sqlite3
+import os
+import re
 
+# ---------------------------------------------------------------------------
+# CAMADA DE BANCO DE DADOS - COMPATÍVEL COM POSTGRESQL (produção) E SQLITE (local)
+# ---------------------------------------------------------------------------
+# Como funciona:
+#   - Se a variável de ambiente DATABASE_URL existir (ex.: no Render apontando
+#     para o Neon/PostgreSQL), o app usa PostgreSQL -> os dados ficam salvos
+#     PARA SEMPRE, mesmo quando o site suspende ou faz um novo deploy.
+#   - Se NÃO existir DATABASE_URL, o app cai no SQLite local (pub.db), que é
+#     ótimo para você testar no seu computador pelo VS Code.
+#
+# O resto do código (main.py e import_shows.py) NÃO precisa mudar: os wrappers
+# abaixo traduzem automaticamente os "?" do SQLite para "%s" do PostgreSQL.
+# ---------------------------------------------------------------------------
+
+DATABASE_URL = os.environ.get("DATABASE_URL")
+USANDO_POSTGRES = bool(DATABASE_URL)
+
+
+# ===========================================================================
+# WRAPPERS DE COMPATIBILIDADE (só usados no modo PostgreSQL)
+# ===========================================================================
+class _CursorWrapper:
+    """Envolve o cursor do psycopg para aceitar a sintaxe '?' do SQLite
+    e o acesso por nome de coluna (row["coluna"]), igual ao sqlite3.Row."""
+
+    def __init__(self, cursor):
+        self._cursor = cursor
+
+    @staticmethod
+    def _traduzir(sql):
+        # Troca os placeholders "?" (SQLite) por "%s" (PostgreSQL),
+        # sem mexer em "?" que estejam dentro de aspas.
+        resultado = []
+        dentro_aspas = None
+        for ch in sql:
+            if dentro_aspas:
+                if ch == dentro_aspas:
+                    dentro_aspas = None
+                resultado.append(ch)
+            elif ch in ("'", '"'):
+                dentro_aspas = ch
+                resultado.append(ch)
+            elif ch == "?":
+                resultado.append("%s")
+            else:
+                resultado.append(ch)
+        return "".join(resultado)
+
+    def execute(self, sql, params=None):
+        sql = self._traduzir(sql)
+        if params is None:
+            return self._cursor.execute(sql)
+        return self._cursor.execute(sql, params)
+
+    def executemany(self, sql, seq_params):
+        sql = self._traduzir(sql)
+        return self._cursor.executemany(sql, seq_params)
+
+    def fetchone(self):
+        return self._cursor.fetchone()
+
+    def fetchall(self):
+        return self._cursor.fetchall()
+
+    def __getattr__(self, nome):
+        # Repassa qualquer outro atributo/método para o cursor real
+        return getattr(self._cursor, nome)
+
+
+class _ConnectionWrapper:
+    """Envolve a conexão do psycopg para devolver cursores compatíveis."""
+
+    def __init__(self, conn):
+        self._conn = conn
+
+    def cursor(self):
+        return _CursorWrapper(self._conn.cursor())
+
+    def execute(self, sql, params=None):
+        cur = self.cursor()
+        cur.execute(sql, params)
+        return cur
+
+    def __getattr__(self, nome):
+        return getattr(self._conn, nome)
+
+
+# ===========================================================================
+# CONEXÃO
+# ===========================================================================
 def get_db_connection():
-    conn = sqlite3.connect('pub.db')
-    conn.row_factory = sqlite3.Row
-    return conn
+    if USANDO_POSTGRES:
+        import psycopg
+        from psycopg.rows import dict_row
+
+        # dict_row faz row["coluna"] funcionar igual ao sqlite3.Row
+        conn = psycopg.connect(DATABASE_URL, row_factory=dict_row)
+        return _ConnectionWrapper(conn)
+    else:
+        import sqlite3
+
+        conn = sqlite3.connect("pub.db")
+        conn.row_factory = sqlite3.Row
+        return conn
+
+
+# ===========================================================================
+# CRIAÇÃO DAS TABELAS
+# ===========================================================================
+def _tabela_vazia(cursor, tabela):
+    cursor.execute(f"SELECT COUNT(*) AS total FROM {tabela}")
+    row = cursor.fetchone()
+    # Compatível com PostgreSQL (dict) e SQLite (tupla/Row)
+    try:
+        return row["total"] == 0
+    except (TypeError, KeyError, IndexError):
+        return row[0] == 0
+
+
+def _contar(cursor, tabela):
+    cursor.execute(f"SELECT COUNT(*) AS total FROM {tabela}")
+    row = cursor.fetchone()
+    try:
+        return row["total"]
+    except (TypeError, KeyError, IndexError):
+        return row[0]
+
 
 def init_db():
     conn = get_db_connection()
     cursor = conn.cursor()
-    
+
+    # Tipo de chave primária auto-incremento muda entre os bancos
+    if USANDO_POSTGRES:
+        pk = "SERIAL PRIMARY KEY"
+    else:
+        pk = "INTEGER PRIMARY KEY AUTOINCREMENT"
+
     # 1. Mesas
-    cursor.execute('''
+    cursor.execute(f'''
         CREATE TABLE IF NOT EXISTS mesas (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id {pk},
             identificacao TEXT UNIQUE NOT NULL,
             setor TEXT NOT NULL,
             capacidade INTEGER NOT NULL
         )
     ''')
-    
+
     # 2. Shows
-    cursor.execute('''
+    cursor.execute(f'''
         CREATE TABLE IF NOT EXISTS shows (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id {pk},
             data_show TEXT NOT NULL UNIQUE,
             banda TEXT NOT NULL,
             limite_capacidade INTEGER DEFAULT 150,
             visivel INTEGER DEFAULT 1
         )
     ''')
-    try:
-        cursor.execute("ALTER TABLE shows ADD COLUMN visivel INTEGER DEFAULT 1")
-    except Exception:
-        pass
 
-    try:
-        cursor.execute("ALTER TABLE reservas ADD COLUMN aniversario TEXT DEFAULT 'Não'")
-    except Exception:
-        pass
-    
     # 3. Reservas
-    cursor.execute('''
+    cursor.execute(f'''
         CREATE TABLE IF NOT EXISTS reservas (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id {pk},
             codigo TEXT UNIQUE NOT NULL,
             show_id INTEGER NOT NULL,
             nome_cliente TEXT NOT NULL,
@@ -51,15 +172,16 @@ def init_db():
             qtd_pessoas INTEGER NOT NULL,
             status TEXT DEFAULT 'Pendente',
             mesas_alocadas TEXT,
+            aniversario TEXT DEFAULT 'Não',
             token_cancelamento TEXT UNIQUE NOT NULL,
             FOREIGN KEY (show_id) REFERENCES shows (id)
         )
     ''')
-    
+
     # 4. Cardápio
-    cursor.execute('''
+    cursor.execute(f'''
         CREATE TABLE IF NOT EXISTS cardapio (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id {pk},
             categoria TEXT NOT NULL,
             nome TEXT NOT NULL,
             descricao TEXT,
@@ -69,18 +191,41 @@ def init_db():
         )
     ''')
 
-    # Povoar Mesas se estiver vazio ou atualizar
-    cursor.execute('SELECT COUNT(*) FROM mesas')
-    if cursor.fetchone()[0] < 45:
-        cursor.execute('DELETE FROM mesas') # Limpa para recadastrar todas perfeitamente
-        
+    # Garante que as tabelas fiquem gravadas antes de qualquer ALTER.
+    # (No PostgreSQL, um ALTER que falha aborta a transação inteira; sem este
+    # commit, isso reverteria também os CREATE TABLE acima.)
+    conn.commit()
+
+    # Colunas que podem faltar em bancos antigos (migração suave, sem apagar nada).
+    for tabela, coluna, definicao in [
+        ("shows", "visivel", "INTEGER DEFAULT 1"),
+        ("reservas", "aniversario", "TEXT DEFAULT 'Não'"),
+    ]:
+        try:
+            if USANDO_POSTGRES:
+                # PostgreSQL suporta IF NOT EXISTS: não gera erro se já existir.
+                cursor.execute(
+                    f"ALTER TABLE {tabela} ADD COLUMN IF NOT EXISTS {coluna} {definicao}"
+                )
+            else:
+                # SQLite não tem IF NOT EXISTS no ADD COLUMN; ignoramos o erro.
+                cursor.execute(f"ALTER TABLE {tabela} ADD COLUMN {coluna} {definicao}")
+            conn.commit()
+        except Exception:
+            # Coluna já existe (ou outro motivo benigno): desfaz só este passo.
+            if USANDO_POSTGRES:
+                conn.rollback()
+
+    # Povoar Mesas SOMENTE se a tabela estiver vazia.
+    # (Removido o "DELETE FROM mesas" que apagava tudo a cada reinício!)
+    if _contar(cursor, "mesas") == 0:
         mesas_completas = []
         # Térreo: 1 a 17 (Bistrôs 4 lug) e 18 a 22 (Mesas 6 lug)
         for i in range(1, 18):
             mesas_completas.append((str(i), 'Térreo', 4))
         for i in range(18, 23):
             mesas_completas.append((str(i), 'Térreo', 6))
-            
+
         # Mezanino: 23 a 45 com capacidades reais
         capacidades_mezanino = {
             23: 4, 24: 4, 25: 4, 26: 4,
@@ -94,20 +239,22 @@ def init_db():
         }
         for num, cap in capacidades_mezanino.items():
             mesas_completas.append((str(num), 'Mezanino', cap))
-            
-        cursor.executemany('INSERT INTO mesas (identificacao, setor, capacidade) VALUES (?, ?, ?)', mesas_completas)
+
+        cursor.executemany(
+            'INSERT INTO mesas (identificacao, setor, capacidade) VALUES (?, ?, ?)',
+            mesas_completas
+        )
         print("-> 45 Mesas cadastradas (Térreo + Mezanino) com sucesso!")
 
-    # Povoar Cardápio completo
-    cursor.execute('SELECT COUNT(*) FROM cardapio')
-    if cursor.fetchone()[0] == 0:
+    # Povoar Cardápio completo apenas se estiver vazio
+    if _contar(cursor, "cardapio") == 0:
         itens = [
             # CHOPPS
             ('Chopps', 'Chopp Brahma 500ML', 'Chopp claro e refrescante', 17.90, None),
             ('Chopps', 'Chopp Brahma 300ML', 'Chopp claro e refrescante', 15.90, None),
             ('Chopps', 'Chopp Heineken 500ML', 'Puro malte premium', 18.90, None),
             ('Chopps', 'Chopp Heineken 300ML', 'Puro malte premium', 16.90, None),
-            
+
             # CERVEJAS 600ML
             ('Cervejas 600ml', 'Heineken 600ML', 'Garrafa 600ml', 21.90, None),
             ('Cervejas 600ml', 'Original 600ML', 'Garrafa 600ml', 19.90, None),
@@ -121,7 +268,7 @@ def init_db():
             ('Long Neck & Latas', 'Chá de Pinheirinho', 'Hard Tea refrescante', 16.90, None),
             ('Long Neck & Latas', 'Smirnoff ICE 275ML', 'Bebida mista refrescante', 16.00, None),
             ('Long Neck & Latas', 'Skol Beats 269ML', 'Consulte sabores disponíveis', 16.00, None),
-            
+
             # GIN & TONICA
             ('Gins Especiais', 'Gin Tônica Tradicional Nacional', 'Gin Nacional, limão siciliano e água tônica', 32.90, None),
             ('Gins Especiais', 'Gin Tônica Tradicional Bombay', 'Gin Bombay, limão siciliano e água tônica', 37.90, None),
@@ -213,7 +360,7 @@ def init_db():
             ('Vinhos & Sobremesa', 'Garrafa Vinho Concha y Toro', 'Chileno: Cabernet Sauvignon, Merlot, Malbec ou Carmenére', 79.90, None),
             ('Vinhos & Sobremesa', 'Petit Gateau', 'Bolinho quente de chocolate com uma bola de sorvete de creme', 24.90, None)
         ]
-        
+
         cursor.executemany('''
             INSERT INTO cardapio (categoria, nome, descricao, preco, preco_meia)
             VALUES (?, ?, ?, ?, ?)
@@ -223,5 +370,7 @@ def init_db():
     conn.commit()
     conn.close()
 
+
 if __name__ == '__main__':
     init_db()
+    print(f"-> Banco inicializado usando: {'PostgreSQL' if USANDO_POSTGRES else 'SQLite (local)'}")
