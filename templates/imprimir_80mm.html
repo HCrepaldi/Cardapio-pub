@@ -4,10 +4,17 @@
     <meta charset="UTF-8">
     <title>Lista de Reservas - No Black Tie Pub</title>
     <style>
-        /* Formatação perfeita para bobina térmica de 80mm */
+        /* Formatação para bobina térmica de 80mm.
+           Impressora térmica NÃO imprime cinza: tudo precisa ser preto puro (#000)
+           e com fonte maior/negrito, senão sai apagado. */
         @page {
             size: 80mm auto;
             margin: 0;
+        }
+        * {
+            /* Força o navegador a imprimir as cores exatas (não "clarear" nada) */
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
         }
         body {
             font-family: "Courier New", Courier, monospace;
@@ -16,27 +23,35 @@
             padding: 4mm 2mm;
             color: #000;
             background: #fff;
-            font-size: 11px;
-            line-height: 1.25;
+            font-size: 14px;      /* era 11px - aumentado para legibilidade */
+            font-weight: bold;    /* tudo em negrito: sai bem mais forte na térmica */
+            line-height: 1.35;
         }
         .text-center { text-align: center; }
         .bold { font-weight: bold; }
-        .linha { border-top: 1px dashed #000; margin: 5px 0; }
-        .linha-dupla { border-top: 1px double #000; margin: 6px 0; }
+        /* Linhas mais grossas e 100% pretas */
+        .linha { border-top: 2px dashed #000; margin: 6px 0; }
+        .linha-dupla { border-top: 3px double #000; margin: 7px 0; }
         .flex { display: flex; justify-content: space-between; }
-        
+
         .item-reserva {
-            margin-bottom: 6px;
-            padding-bottom: 4px;
-            border-bottom: 1px dotted #ccc;
+            margin-bottom: 8px;
+            padding-bottom: 5px;
+            border-bottom: 2px dotted #000;   /* preto puro (antes era cinza claro) */
         }
         .box-check {
             display: inline-block;
-            width: 10px;
-            height: 10px;
-            border: 1px solid #000;
-            margin-right: 4px;
+            width: 12px;
+            height: 12px;
+            border: 2px solid #000;
+            margin-right: 5px;
             vertical-align: middle;
+        }
+        /* Detalhes (qtd/código): antes eram cinza e pequenos -> agora pretos e maiores */
+        .detalhe {
+            font-size: 12px;
+            color: #000;
+            margin-left: 17px;
         }
         @media print {
             .no-print { display: none; }
@@ -56,17 +71,17 @@
 
     <!-- CABEÇALHO DO PUB -->
     <div class="text-center">
-        <div class="bold" style="font-size: 14px;">NO BLACK TIE PUB</div>
-        <div style="font-size: 10px;">LISTA OFICIAL DE RESERVAS</div>
+        <div class="bold" style="font-size: 18px;">NO BLACK TIE PUB</div>
+        <div style="font-size: 13px;">LISTA OFICIAL DE RESERVAS</div>
         <div class="linha"></div>
-        <div class="bold">{{ show.data_show }}</div>
-        <div>{{ show.banda }}</div>
-        <div style="font-size: 9px;">Tolerância das Mesas: até 20:30h</div>
+        <div class="bold" style="font-size: 16px;">{{ show.data_show }}</div>
+        <div style="font-size: 14px;">{{ show.banda }}</div>
+        <div style="font-size: 12px;">Tolerância das Mesas: até 20:30h</div>
     </div>
 
     <div class="linha-dupla"></div>
 
-    <div class="flex bold">
+    <div class="flex bold" style="font-size: 15px;">
         <span>TOTAL RESERVAS: {{ reservas|length }}</span>
         <span>LUGARES: {{ total_pessoas }}</span>
     </div>
@@ -76,11 +91,11 @@
     <!-- LISTAGEM DOS CLIENTES -->
     {% for r in reservas %}
     <div class="item-reserva">
-        <div class="flex bold">
+        <div class="flex bold" style="font-size: 15px;">
             <span><span class="box-check"></span>{{ r.nome_cliente[:20] }}</span>
             <span>MESA: {{ r.mesas_alocadas }}</span>
         </div>
-        <div class="flex" style="font-size: 10px; color: #333; margin-left: 14px;">
+        <div class="flex detalhe">
             <span>Qtd: {{ r.qtd_pessoas }} pess.</span>
             <span>{{ r.codigo }}</span>
         </div>
@@ -91,7 +106,7 @@
 
     <div class="linha"></div>
 
-    <div class="text-center" style="font-size: 9px; margin-top: 10px;">
+    <div class="text-center" style="font-size: 12px; margin-top: 10px;">
         *** BOM SHOW A TODOS! ***<br>
         Emitido pelo Caixa em {{ show.data_show }}
     </div>
