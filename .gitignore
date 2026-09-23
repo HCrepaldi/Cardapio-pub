@@ -1,0 +1,17 @@
+# Banco de dados local (NUNCA versionar! Era isso que causava a perda de dados)
+pub.db
+*.sqlite
+*.sqlite3
+
+# Variáveis de ambiente (segredos, senhas, DATABASE_URL)
+.env
+
+# Cache do Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Ambiente virtual
+venv/
+.venv/
+env/

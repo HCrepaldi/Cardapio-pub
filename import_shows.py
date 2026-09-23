@@ -1,9 +1,13 @@
 from database import get_db_connection
 
 shows_agenda = [
+    # SETEMBRO/2026
+    ("2026-09-25", "Lost Dogs (Pearl Jam Cover)"),
+    ("2026-09-26", "Bon Jovi Experience"),
+
     # OUTUBRO/2026
     ("2026-10-02", "Radio Galena"),
-    ("2026-10-03", "Velotroll"),
+    ("2026-10-03", "Velotroll 80's"),
     ("2026-10-09", "Makina L.A."),
     ("2026-10-10", "Hot Rocks"),
     ("2026-10-16", "Back 2 Back"),
@@ -20,7 +24,7 @@ shows_agenda = [
     ("2026-11-14", "Dom Paulinho"),
     ("2026-11-19", "Allstar 40 (Véspera de Feriado)"),
     ("2026-11-20", "Core"),
-    ("2026-11-21", "Velotroll"),
+    ("2026-11-21", "Velotroll 80's"),
     ("2026-11-27", "Classic Zoom"),
     ("2026-11-28", "Kaleidoscope"),
 
@@ -31,6 +35,7 @@ shows_agenda = [
     ("2026-12-12", "Lost Dogs (Pearl Jam Cover)"),
     ("2026-12-18", "Hot Rocks"),
     ("2026-12-19", "X-Rock (Última do ano/26)"),
+    # Férias até 08/01/2027
 ]
 
 def importar():
