@@ -1,5 +1,5 @@
 """
-SUBIR AS RESERVAS DA SEXTA — Show LOST DOGS (Pearl Jam Cover) — 12/12/2026.
+SUBIR AS RESERVAS DA SEXTA — Show LOST DOGS — 25/09/2026.
 
 O que este script faz:
   1. Encontra o show do Lost Dogs pela data.
@@ -22,8 +22,8 @@ Como usar (no terminal, dentro da pasta do projeto):
 import secrets
 from database import get_db_connection, init_db
 
-# Data do show na agenda (Lost Dogs / Pearl Jam Cover)
-DATA_SHOW = "2026-12-12"
+# Data do show na agenda (Lost Dogs — sexta 25/09/2026)
+DATA_SHOW = "2026-09-25"
 
 # Reservas confirmadas: (nome_cliente, qtd_pessoas, mesas_alocadas, aniversario)
 RESERVAS = [
