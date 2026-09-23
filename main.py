@@ -4,7 +4,12 @@ from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 import secrets
 import os
+from datetime import datetime, timezone, timedelta
 from database import get_db_connection, init_db
+
+# Fuso horário de Brasília (UTC-3). O servidor do Render roda em UTC, então
+# precisamos ajustar para mostrar a hora correta do Brasil na impressão.
+FUSO_BRASILIA = timezone(timedelta(hours=-3))
 
 app = FastAPI()
 
@@ -20,7 +25,11 @@ app.mount("/static", StaticFiles(directory=pasta_static), name="static")
 
 templates = Jinja2Templates(directory=os.path.join(DIRETORIO_BASE, "templates"))
 
-SENHA_ADMIN = "Giovani57@"
+# A senha do admin vem de uma variável de ambiente (NUNCA fica no código).
+# - Em produção (Render): defina a variável SENHA_ADMIN no painel.
+# - No seu PC: defina no terminal ou num arquivo .env (que o .gitignore bloqueia).
+# Se a variável não existir, usa um valor padrão só para desenvolvimento local.
+SENHA_ADMIN = os.environ.get("SENHA_ADMIN", "troque-esta-senha-no-render")
 
 @app.on_event("startup")
 def startup():
@@ -229,4 +238,7 @@ def imprimir_lista_80mm(request: Request, show_id: int, auth: bool = Depends(ver
     cursor.execute("SELECT COALESCE(SUM(qtd_pessoas), 0) FROM reservas WHERE show_id = ?", (show_id,))
     total_pessoas = cursor.fetchone()[0]
     conn.close()
-    return templates.TemplateResponse(request=request, name="imprimir_80mm.html", context={"show": show, "reservas": reservas, "total_pessoas": total_pessoas})
+    # Data/hora REAL da impressão (momento em que o caixa emitiu a lista),
+    # no horário de Brasília, formato dd/mm/aaaa HH:MM. Não é a data do show.
+    data_impressao = datetime.now(FUSO_BRASILIA).strftime("%d/%m/%Y %H:%M")
+    return templates.TemplateResponse(request=request, name="imprimir_80mm.html", context={"show": show, "reservas": reservas, "total_pessoas": total_pessoas, "data_impressao": data_impressao})
