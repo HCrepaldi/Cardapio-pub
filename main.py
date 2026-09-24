@@ -227,6 +227,15 @@ def criar_show(data_show: str = Form(...), banda: str = Form(...), limite_capaci
     return RedirectResponse(url="/admin", status_code=status.HTTP_303_SEE_OTHER)
 
 # Impressão na Bobina de 80mm
+def _formatar_data_br(data_iso):
+    """Converte a data do show de '2026-09-25' (formato do banco) para
+    '25/09/26' (DD/MM/AA). Se vier em outro formato, devolve como está."""
+    try:
+        return datetime.strptime(str(data_iso), "%Y-%m-%d").strftime("%d/%m/%y")
+    except (ValueError, TypeError):
+        return str(data_iso)
+
+
 @app.get("/admin/imprimir/{show_id}", response_class=HTMLResponse)
 def imprimir_lista_80mm(request: Request, show_id: int, auth: bool = Depends(verificar_autenticacao)):
     conn = get_db_connection()
@@ -238,7 +247,18 @@ def imprimir_lista_80mm(request: Request, show_id: int, auth: bool = Depends(ver
     cursor.execute("SELECT COALESCE(SUM(qtd_pessoas), 0) FROM reservas WHERE show_id = ?", (show_id,))
     total_pessoas = cursor.fetchone()[0]
     conn.close()
+    # Lista só dos aniversariantes (para as listas separadas caixa/banda)
+    aniversariantes = [r for r in reservas if r["aniversario"] == "Sim"]
+    # Data do show em DD/MM/AA
+    data_show_br = _formatar_data_br(show["data_show"]) if show else ""
     # Data/hora REAL da impressão (momento em que o caixa emitiu a lista),
-    # no horário de Brasília, formato dd/mm/aaaa HH:MM. Não é a data do show.
-    data_impressao = datetime.now(FUSO_BRASILIA).strftime("%d/%m/%Y %H:%M")
-    return templates.TemplateResponse(request=request, name="imprimir_80mm.html", context={"show": show, "reservas": reservas, "total_pessoas": total_pessoas, "data_impressao": data_impressao})
+    # no horário de Brasília, formato dd/mm/aa HH:MM. Não é a data do show.
+    data_impressao = datetime.now(FUSO_BRASILIA).strftime("%d/%m/%y %H:%M")
+    return templates.TemplateResponse(request=request, name="imprimir_80mm.html", context={
+        "show": show,
+        "reservas": reservas,
+        "total_pessoas": total_pessoas,
+        "aniversariantes": aniversariantes,
+        "data_show_br": data_show_br,
+        "data_impressao": data_impressao,
+    })

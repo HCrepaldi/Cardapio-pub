@@ -5,14 +5,13 @@
     <title>Lista de Reservas - No Black Tie Pub</title>
     <style>
         /* Formatação para bobina térmica de 80mm.
-           Impressora térmica NÃO imprime cinza: tudo precisa ser preto puro (#000)
-           e com fonte maior/negrito, senão sai apagado. */
+           Impressora térmica NÃO imprime cinza: tudo preto puro (#000),
+           fonte grande e negrito, senão sai apagado. */
         @page {
             size: 80mm auto;
             margin: 0;
         }
         * {
-            /* Força o navegador a imprimir as cores exatas (não "clarear" nada) */
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
         }
@@ -23,13 +22,12 @@
             padding: 4mm 2mm;
             color: #000;
             background: #fff;
-            font-size: 14px;      /* era 11px - aumentado para legibilidade */
-            font-weight: bold;    /* tudo em negrito: sai bem mais forte na térmica */
+            font-size: 14px;
+            font-weight: bold;
             line-height: 1.35;
         }
         .text-center { text-align: center; }
         .bold { font-weight: bold; }
-        /* Linhas mais grossas e 100% pretas */
         .linha { border-top: 2px dashed #000; margin: 6px 0; }
         .linha-dupla { border-top: 3px double #000; margin: 7px 0; }
         .flex { display: flex; justify-content: space-between; }
@@ -37,7 +35,7 @@
         .item-reserva {
             margin-bottom: 8px;
             padding-bottom: 5px;
-            border-bottom: 2px dotted #000;   /* preto puro (antes era cinza claro) */
+            border-bottom: 2px dotted #000;
         }
         .box-check {
             display: inline-block;
@@ -47,76 +45,195 @@
             margin-right: 5px;
             vertical-align: middle;
         }
-        /* Detalhes (qtd/código): antes eram cinza e pequenos -> agora pretos e maiores */
-        .detalhe {
-            font-size: 12px;
-            color: #000;
-            margin-left: 17px;
+        .detalhe { font-size: 12px; color: #000; margin-left: 17px; }
+
+        /* Cabeçalho reutilizável pelas 3 listas */
+        .cabecalho .casa { font-size: 18px; font-weight: bold; }
+        .cabecalho .sub { font-size: 13px; }
+        .cabecalho .data { font-size: 16px; font-weight: bold; }
+        .cabecalho .banda { font-size: 14px; }
+
+        /* Lista de aniversários (versão CAIXA) */
+        .item-aniv {
+            display: flex;
+            align-items: center;
+            font-size: 16px;
+            margin-bottom: 10px;
+            padding-bottom: 6px;
+            border-bottom: 2px dotted #000;
         }
+        .item-aniv .mesa-aniv { margin-left: auto; }
+
+        /* Lista de aniversários (versão BANDA) - letras GRANDES, sem checkbox */
+        .item-banda {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            margin: 14px 0;
+            padding-bottom: 8px;
+            border-bottom: 3px solid #000;
+            line-height: 1.3;
+        }
+        .item-banda .mesa-b { font-size: 18px; display: block; }
+
+        /* --- CONTROLE DE QUAL DOCUMENTO IMPRIME ---
+           Na tela, mostramos só o documento de reservas (os outros ficam ocultos
+           e são acessados pelos botões). Na impressão, só imprime o documento
+           cuja classe está ativa no body -> assim sai UM documento por vez,
+           e a guilhotina corta ao final de cada impressão. */
+        .doc-aniv-caixa, .doc-aniv-banda { display: none; }
+
         @media print {
-            .no-print { display: none; }
+            .no-print { display: none !important; }
+            /* Por padrão (imprimir reservas), esconde os docs de aniversário */
+            .doc-aniv-caixa, .doc-aniv-banda { display: none !important; }
+            /* Quando o body pede um doc específico, mostra só ele */
+            body.imprimir-caixa .doc-reservas { display: none !important; }
+            body.imprimir-caixa .doc-aniv-caixa { display: block !important; }
+            body.imprimir-banda .doc-reservas { display: none !important; }
+            body.imprimir-banda .doc-aniv-banda { display: block !important; }
         }
     </style>
 </head>
 <body>
 
+    <!-- BOTÕES (só na tela, nunca impressos) -->
     <div class="no-print" style="margin-bottom: 15px; text-align: center;">
-        <button onclick="window.print()" style="padding: 6px 15px; font-weight: bold; cursor: pointer; background: #000; color: #fff; border-radius: 4px;">
-            IMPRIMIR AGORA
+        <button onclick="imprimirReservas()" style="padding: 8px 16px; font-weight: bold; cursor: pointer; background: #000; color: #fff; border-radius: 4px;">
+            🖨️ IMPRIMIR RESERVAS
         </button>
-        <button onclick="window.close()" style="padding: 6px 15px; cursor: pointer; margin-left: 5px;">
+        {% if aniversariantes %}
+        <button onclick="imprimirCaixa()" style="padding: 8px 16px; font-weight: bold; cursor: pointer; background: #9333ea; color: #fff; border-radius: 4px; margin-left: 6px;">
+            🎂 ANIVERSÁRIOS (CAIXA)
+        </button>
+        <button onclick="imprimirBanda()" style="padding: 8px 16px; font-weight: bold; cursor: pointer; background: #dc2626; color: #fff; border-radius: 4px; margin-left: 6px;">
+            🎤 ANIVERSÁRIOS (BANDA)
+        </button>
+        {% endif %}
+        <button onclick="window.close()" style="padding: 8px 16px; cursor: pointer; margin-left: 6px;">
             Fechar
         </button>
     </div>
 
-    <!-- CABEÇALHO DO PUB -->
-    <div class="text-center">
-        <div class="bold" style="font-size: 18px;">NO BLACK TIE PUB</div>
-        <div style="font-size: 13px;">LISTA OFICIAL DE RESERVAS</div>
-        <div class="linha"></div>
-        <div class="bold" style="font-size: 16px;">{{ show.data_show }}</div>
-        <div style="font-size: 14px;">{{ show.banda }}</div>
-        <div style="font-size: 12px;">Tolerância das Mesas: até 20:30h</div>
+    {% if aniversariantes %}
+    <div class="no-print text-center" style="font-size: 12px; color: #444; margin-bottom: 12px;">
+        Imprima a lista de reservas. Depois que a guilhotina cortar, use os botões
+        roxo (caixa) e vermelho (banda) para imprimir as listas de aniversário — cada
+        uma sai como um documento separado (com corte próprio).
     </div>
+    {% endif %}
 
-    <div class="linha-dupla"></div>
+    <!-- ============ DOCUMENTO 1: LISTA OFICIAL DE RESERVAS ============ -->
+    <div class="doc-reservas">
+        <div class="text-center cabecalho">
+            <div class="casa">NO BLACK TIE PUB</div>
+            <div class="sub">LISTA OFICIAL DE RESERVAS</div>
+            <div class="linha"></div>
+            <div class="data">{{ data_show_br }}</div>
+            <div class="banda">{{ show.banda }}</div>
+            <div style="font-size: 12px;">Tolerância das Mesas: até 20:30h</div>
+        </div>
 
-    <div class="flex bold" style="font-size: 15px;">
-        <span>TOTAL RESERVAS: {{ reservas|length }}</span>
-        <span>LUGARES: {{ total_pessoas }}</span>
-    </div>
+        <div class="linha-dupla"></div>
 
-    <div class="linha-dupla"></div>
-
-    <!-- LISTAGEM DOS CLIENTES -->
-    {% for r in reservas %}
-    <div class="item-reserva">
         <div class="flex bold" style="font-size: 15px;">
-            <span><span class="box-check"></span>{{ r.nome_cliente[:20] }}</span>
-            <span>MESA: {{ r.mesas_alocadas }}</span>
+            <span>TOTAL RESERVAS: {{ reservas|length }}</span>
+            <span>LUGARES: {{ total_pessoas }}</span>
         </div>
-        <div class="flex detalhe">
-            <span>Qtd: {{ r.qtd_pessoas }} pess.</span>
-            <span>{{ r.codigo }}</span>
+
+        <div class="linha-dupla"></div>
+
+        {% for r in reservas %}
+        <div class="item-reserva">
+            <div class="flex bold" style="font-size: 15px;">
+                <span><span class="box-check"></span>{% if r.aniversario == 'Sim' %}* {% endif %}{{ r.nome_cliente[:20] }}</span>
+                <span>MESA: {{ r.mesas_alocadas }}</span>
+            </div>
+            <div class="flex detalhe">
+                <span>Qtd: {{ r.qtd_pessoas }} pess.</span>
+                <span>{{ r.codigo }}</span>
+            </div>
+        </div>
+        {% else %}
+        <div class="text-center">Nenhuma reserva aprovada para esta noite.</div>
+        {% endfor %}
+
+        {% if aniversariantes %}
+        <div class="linha"></div>
+        <div class="text-center" style="font-size: 12px;">* = aniversariante (drink só p/ quem reservou)</div>
+        {% endif %}
+
+        <div class="linha"></div>
+        <div class="text-center" style="font-size: 12px; margin-top: 10px;">
+            *** BOM SHOW A TODOS! ***<br>
+            Emitido pelo Caixa em {{ data_impressao }}
         </div>
     </div>
-    {% else %}
-    <div class="text-center">Nenhuma reserva aprovada para esta noite.</div>
-    {% endfor %}
 
-    <div class="linha"></div>
-
-    <div class="text-center" style="font-size: 12px; margin-top: 10px;">
-        *** BOM SHOW A TODOS! ***<br>
-        Emitido pelo Caixa em {{ data_impressao }}
+    {% if aniversariantes %}
+    <!-- ============ DOCUMENTO 2: ANIVERSÁRIOS (CAIXA - com checkbox) ============ -->
+    <div class="doc-aniv-caixa">
+        <div class="text-center cabecalho">
+            <div class="casa">NO BLACK TIE PUB</div>
+            <div class="sub">🎂 ANIVERSARIANTES</div>
+            <div class="linha"></div>
+            <div class="data">{{ data_show_br }}</div>
+            <div class="banda">{{ show.banda }}</div>
+        </div>
+        <div class="linha-dupla"></div>
+        <div class="text-center" style="font-size: 12px; margin-bottom: 8px;">
+            Marque ao entregar o DRINK (só mediante reserva)
+        </div>
+        {% for a in aniversariantes %}
+        <div class="item-aniv">
+            <span class="box-check"></span>
+            <span>{{ a.nome_cliente[:20] }}</span>
+            <span class="mesa-aniv">MESA: {{ a.mesas_alocadas }}</span>
+        </div>
+        {% endfor %}
+        <div class="linha"></div>
+        <div class="text-center" style="font-size: 12px; margin-top: 8px;">
+            Emitido em {{ data_impressao }}
+        </div>
     </div>
 
-    <!-- Script para abrir a caixa de impressão automaticamente -->
+    <!-- ============ DOCUMENTO 3: ANIVERSÁRIOS (BANDA - letra grande, sem checkbox) ============ -->
+    <div class="doc-aniv-banda">
+        <div class="text-center cabecalho">
+            <div class="casa">NO BLACK TIE PUB</div>
+            <div class="sub">🎤 PARABÉNS!</div>
+            <div class="linha"></div>
+            <div class="data">{{ data_show_br }}</div>
+            <div class="banda">{{ show.banda }}</div>
+        </div>
+        <div class="linha-dupla"></div>
+        {% for a in aniversariantes %}
+        <div class="item-banda">
+            {{ a.nome_cliente[:20] }}
+            <span class="mesa-b">Mesa {{ a.mesas_alocadas }}</span>
+        </div>
+        {% endfor %}
+        <div class="linha"></div>
+        <div class="text-center" style="font-size: 12px; margin-top: 8px;">
+            🎸 Chamar ao palco p/ Parabéns 🎂
+        </div>
+    </div>
+    {% endif %}
+
     <script>
-        window.onload = function() {
-            // Se preferir que abra direto o diálogo de impressão, descomente abaixo:
-            // window.print();
+        function imprimir(classe) {
+            document.body.classList.remove('imprimir-caixa', 'imprimir-banda');
+            if (classe) document.body.classList.add(classe);
+            window.print();
         }
+        function imprimirReservas() { imprimir(null); }
+        function imprimirCaixa()    { imprimir('imprimir-caixa'); }
+        function imprimirBanda()    { imprimir('imprimir-banda'); }
+
+        // Depois de imprimir, volta ao estado normal (mostrando reservas na tela)
+        window.onafterprint = function () {
+            document.body.classList.remove('imprimir-caixa', 'imprimir-banda');
+        };
     </script>
 </body>
 </html>
