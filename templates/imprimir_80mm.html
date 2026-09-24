@@ -175,7 +175,7 @@
     <div class="doc-aniv-caixa">
         <div class="text-center cabecalho">
             <div class="casa">NO BLACK TIE PUB</div>
-            <div class="sub">🎂 ANIVERSARIANTES</div>
+            <div class="sub">🎂 LISTA OFICIAL DE ANIVERSÁRIOS</div>
             <div class="linha"></div>
             <div class="data">{{ data_show_br }}</div>
             <div class="banda">{{ show.banda }}</div>
@@ -201,12 +201,13 @@
     <div class="doc-aniv-banda">
         <div class="text-center cabecalho">
             <div class="casa">NO BLACK TIE PUB</div>
-            <div class="sub">🎤 PARABÉNS!</div>
+            <div class="sub">🎤 LISTA OFICIAL DE ANIVERSÁRIOS</div>
             <div class="linha"></div>
             <div class="data">{{ data_show_br }}</div>
             <div class="banda">{{ show.banda }}</div>
         </div>
         <div class="linha-dupla"></div>
+        <div class="text-center bold" style="font-size: 18px; margin-bottom: 10px;">🎉 PARABÉNS! 🎉</div>
         {% for a in aniversariantes %}
         <div class="item-banda">
             {{ a.nome_cliente[:20] }}
