@@ -479,140 +479,119 @@
 
                     <!-- 2. PLANTA BAIXA: MEZANINO REAL (DESENHO EXATO) -->
                     <div id="aba-mezanino" class="bg-neutral-950/90 border border-pubBorder rounded-xl p-3 min-h-[460px] hidden flex-col justify-between">
-                        
-                        <div class="grid grid-cols-12 gap-3 items-stretch">
-                            
-                            <!-- LATERAL ESQUERDA: Mesas 28, 27 (com TV) + Grandes 29, 30, 31 + Diagonal 32 -->
-                            <div class="col-span-3 flex flex-col justify-between space-y-3">
-                                <!-- Mesas 28 e 27 com TV ao vivo atrás -->
+
+                        <!-- PALCO NO TOPO (igual ao desenho) -->
+                        <div class="w-full bg-neutral-800 border-2 border-red-700/80 rounded-lg py-1.5 text-center text-[11px] font-black text-red-400 uppercase tracking-[0.3em] mb-2">
+                            🎤 PALCO 🎸
+                        </div>
+
+                        <div class="grid grid-cols-12 gap-2 items-stretch">
+
+                            <!-- ===== LATERAL ESQUERDA: TV+27/28 (topo), grandes 29/30/31, diagonal 32 ===== -->
+                            <div class="col-span-3 flex flex-col gap-2">
+                                <!-- Mesas 27 e 28 com TV (barra roxa) -->
                                 <div>
-                                    <div class="w-full bg-purple-600/80 text-white text-[9px] font-bold text-center py-0.5 rounded-t tracking-wider">
-                                        📺 TV AO VIVO
-                                    </div>
+                                    <div class="w-full bg-purple-600/80 text-white text-[9px] font-bold text-center py-0.5 rounded-t tracking-wider">📺 TV</div>
                                     <div class="flex gap-1.5 border border-purple-500/50 p-1.5 rounded-b bg-purple-950/20">
-                                        <button type="button" id="btn-mesa-28" onclick="toggleMesa('28')" class="mesa-btn flex-1 h-8 rounded text-xs font-bold border border-pubBorder flex items-center justify-center">28 (2)</button>
-                                        <button type="button" id="btn-mesa-27" onclick="toggleMesa('27')" class="mesa-btn flex-1 h-8 rounded text-xs font-bold border border-pubBorder flex items-center justify-center">27 (2)</button>
+                                        <button type="button" id="btn-mesa-28" onclick="toggleMesa('28')" class="mesa-btn flex-1 h-7 rounded text-[11px] font-bold border border-pubBorder flex items-center justify-center">28<span class="text-[8px] ml-0.5 opacity-70">(2)</span></button>
+                                        <button type="button" id="btn-mesa-27" onclick="toggleMesa('27')" class="mesa-btn flex-1 h-7 rounded text-[11px] font-bold border border-pubBorder flex items-center justify-center">27<span class="text-[8px] ml-0.5 opacity-70">(2)</span></button>
                                     </div>
                                 </div>
 
-                                <!-- Mesas Grandes de 6 lugares -->
-                                <button type="button" id="btn-mesa-29" onclick="toggleMesa('29')" class="mesa-btn w-full h-10 rounded-lg text-xs font-bold border border-pubBorder flex items-center justify-center">
-                                    Mesa 29 (6 lug)
-                                </button>
-                                <button type="button" id="btn-mesa-30" onclick="toggleMesa('30')" class="mesa-btn w-full h-10 rounded-lg text-xs font-bold border border-pubBorder flex items-center justify-center">
-                                    Mesa 30 (6 lug)
-                                </button>
-                                <button type="button" id="btn-mesa-31" onclick="toggleMesa('31')" class="mesa-btn w-full h-10 rounded-lg text-xs font-bold border border-pubBorder flex items-center justify-center">
-                                    Mesa 31 (6 lug)
-                                </button>
+                                <!-- Mesas grandes de 6 lugares (altas = mais capacidade) -->
+                                <button type="button" id="btn-mesa-29" onclick="toggleMesa('29')" class="mesa-btn w-full h-16 rounded-lg text-xs font-bold border border-pubBorder flex flex-col items-center justify-center">29<span class="text-[9px] opacity-70">6 lug</span></button>
+                                <button type="button" id="btn-mesa-30" onclick="toggleMesa('30')" class="mesa-btn w-full h-16 rounded-lg text-xs font-bold border border-pubBorder flex flex-col items-center justify-center">30<span class="text-[9px] opacity-70">6 lug</span></button>
+                                <button type="button" id="btn-mesa-31" onclick="toggleMesa('31')" class="mesa-btn w-full h-16 rounded-lg text-xs font-bold border border-pubBorder flex flex-col items-center justify-center">31<span class="text-[9px] opacity-70">6 lug</span></button>
 
-                                <!-- Mesa 32 Diagonal -->
-                                <div class="pt-2">
-                                    <button type="button" id="btn-mesa-32" onclick="toggleMesa('32')" class="mesa-btn w-full h-8 rounded text-xs font-bold border border-pubBorder flex items-center justify-center rotate-[-12deg]">
-                                        Mesa 32 (3 lug)
-                                    </button>
-                                </div>
+                                <!-- Mesa 32 diagonal, canto inferior esquerdo -->
+                                <button type="button" id="btn-mesa-32" onclick="toggleMesa('32')" class="mesa-btn w-3/4 h-9 rounded text-[11px] font-bold border border-pubBorder flex items-center justify-center rotate-[-18deg] mt-1 self-start">32<span class="text-[8px] ml-0.5 opacity-70">(3)</span></button>
                             </div>
 
-                            <!-- CENTRO: VÃO CENTRAL LIVRE PÉ DIREITO DUPLO + GUARDA-CORPOS -->
-                            <div class="col-span-5 flex flex-col justify-between">
-                                <!-- Topo do Vão com Visão pro Palco -->
-                                <div class="bg-neutral-900 border-2 border-red-700/80 rounded py-1 text-center text-[10px] font-black text-red-400 uppercase tracking-widest">
-                                    🎸 VISÃO DO PALCO (VÃO LIVRE) 🎤
+                            <!-- ===== CENTRO: VÃO/ESCADA + guarda-corpo 26,25,24,23 ===== -->
+                            <div class="col-span-5 flex flex-col">
+                                <!-- Vão central (escada diagonal, pé-direito duplo) -->
+                                <div class="vao-livre flex-1 rounded-xl border border-dashed border-neutral-700 flex flex-col items-center justify-center p-3 text-center relative overflow-hidden">
+                                    <span class="text-xs font-black text-pubGold/90 uppercase tracking-widest">VÃO / ESCADA</span>
+                                    <span class="text-[9px] text-gray-400 mt-1">Pé-Direito Duplo • Aberto p/ o Térreo</span>
+                                    <span class="text-[9px] text-amber-300/90 mt-2 font-bold">▨ Escada Central ▨</span>
                                 </div>
 
-                                <!-- O Vão Aberto com Pé Direito Duplo -->
-                                <div class="vao-livre flex-1 my-2 rounded-xl border border-dashed border-neutral-700 flex flex-col items-center justify-center p-3 text-center">
-                                    <span class="text-xs font-black text-pubGold/90 uppercase tracking-widest">VÃO CENTRAL</span>
-                                    <span class="text-[9px] text-gray-400 mt-1">Pé-Direito Duplo • Aberto para o Térreo</span>
-                                </div>
-
-                                <!-- Guarda-Corpo Inferior: Mesas 26, 25 (diagonal) e 24, 23 (frontal) -->
-                                <div class="border-t-2 border-pubGold/60 pt-1.5 bg-neutral-900/80 p-1.5 rounded-lg">
-                                    <span class="block text-[8px] font-bold text-pubGold uppercase mb-1 text-center">Guarda-Corpo Frontal</span>
+                                <!-- Guarda-corpo frontal: 26, 25 (canto diagonal) e 24, 23 (frontais) -->
+                                <div class="border-t-2 border-pubGold/60 pt-1.5 mt-2 bg-neutral-900/80 p-1.5 rounded-lg">
+                                    <span class="block text-[8px] font-bold text-pubGold uppercase mb-1 text-center">Guarda-Corpo Frontal (Visão do Palco)</span>
                                     <div class="flex gap-1.5">
-                                        <button type="button" id="btn-mesa-26" onclick="toggleMesa('26')" class="mesa-btn flex-1 h-7 rounded text-[11px] font-bold border border-pubBorder flex items-center justify-center">26</button>
-                                        <button type="button" id="btn-mesa-25" onclick="toggleMesa('25')" class="mesa-btn flex-1 h-7 rounded text-[11px] font-bold border border-pubBorder flex items-center justify-center">25</button>
-                                        <button type="button" id="btn-mesa-24" onclick="toggleMesa('24')" class="mesa-btn flex-1 h-7 rounded text-[11px] font-bold border border-pubBorder flex items-center justify-center">24</button>
-                                        <button type="button" id="btn-mesa-23" onclick="toggleMesa('23')" class="mesa-btn flex-1 h-7 rounded text-[11px] font-bold border border-pubBorder flex items-center justify-center">23</button>
+                                        <button type="button" id="btn-mesa-26" onclick="toggleMesa('26')" class="mesa-btn flex-1 h-8 rounded text-[11px] font-bold border border-pubBorder flex items-center justify-center rotate-[-8deg]">26<span class="text-[8px] ml-0.5 opacity-70">(4)</span></button>
+                                        <button type="button" id="btn-mesa-25" onclick="toggleMesa('25')" class="mesa-btn flex-1 h-8 rounded text-[11px] font-bold border border-pubBorder flex items-center justify-center rotate-[-4deg]">25<span class="text-[8px] ml-0.5 opacity-70">(4)</span></button>
+                                        <button type="button" id="btn-mesa-24" onclick="toggleMesa('24')" class="mesa-btn flex-1 h-8 rounded text-[11px] font-bold border border-pubBorder flex items-center justify-center">24<span class="text-[8px] ml-0.5 opacity-70">(4)</span></button>
+                                        <button type="button" id="btn-mesa-23" onclick="toggleMesa('23')" class="mesa-btn flex-1 h-8 rounded text-[11px] font-bold border border-pubBorder flex items-center justify-center">23<span class="text-[8px] ml-0.5 opacity-70">(4)</span></button>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- LATERAL DIREITA: Corredor, Guarda-corpo lateral, Mesa 44, Fumantes, Bar e Sinuca -->
-                            <div class="col-span-4 flex flex-col justify-between space-y-2">
-                                
-                                <!-- Topo Direito: Mesa 44 com TV + Área Fumantes Externa -->
-                                <div class="flex gap-2">
-                                    <div class="flex-1">
-                                        <div class="w-full bg-purple-600/80 text-white text-[8px] font-bold text-center py-0.5 rounded-t">📺 TV</div>
-                                        <button type="button" id="btn-mesa-44" onclick="toggleMesa('44')" class="mesa-btn w-full h-8 rounded-b text-[11px] font-bold border border-pubBorder flex items-center justify-center">44 (4)</button>
-                                    </div>
-                                    <!-- Verde Claro: Área Fumantes -->
-                                    <div class="flex-1 bg-emerald-950/60 border border-emerald-600/80 rounded-lg p-1 text-center flex flex-col justify-center">
-                                        <span class="text-[9px] font-black text-emerald-400 leading-tight uppercase">Área Fumante</span>
-                                        <span class="text-[8px] text-emerald-300/80">Externa 🚬</span>
-                                    </div>
-                                </div>
-
-                                <!-- Bloco de Mesas: Guarda-Corpo Direito (39, 38, 37) vs Parede (43, 42, 41) -->
+                            <!-- ===== LATERAL DIREITA: guarda-corpo (39,38,37) + parede (43,42,41) ===== -->
+                            <div class="col-span-4 flex flex-col gap-2">
+                                <!-- Bloco corredor direito: visão do vão (39,38,37) x parede (43,42,41) -->
                                 <div class="flex gap-2 bg-neutral-900/60 p-1.5 rounded-lg border border-pubBorder">
                                     <!-- Guarda-corpo com visão pro vão -->
                                     <div class="flex-1 space-y-1.5">
-                                        <span class="block text-[8px] font-bold text-pubGold text-center">Visão Vão</span>
-                                        <button type="button" id="btn-mesa-39" onclick="toggleMesa('39')" class="mesa-btn w-full h-7 rounded text-[11px] font-bold border border-pubBorder flex items-center justify-center">39 (3)</button>
-                                        <button type="button" id="btn-mesa-38" onclick="toggleMesa('38')" class="mesa-btn w-full h-7 rounded text-[11px] font-bold border border-pubBorder flex items-center justify-center">38 (3)</button>
-                                        <button type="button" id="btn-mesa-37" onclick="toggleMesa('37')" class="mesa-btn w-full h-7 rounded text-[11px] font-bold border border-pubBorder flex items-center justify-center">37 (3)</button>
+                                        <span class="block text-[8px] font-bold text-pubGold text-center">Grade / Vão</span>
+                                        <button type="button" id="btn-mesa-39" onclick="toggleMesa('39')" class="mesa-btn w-full h-7 rounded text-[11px] font-bold border border-pubBorder flex items-center justify-center">39<span class="text-[8px] ml-0.5 opacity-70">(3)</span></button>
+                                        <button type="button" id="btn-mesa-38" onclick="toggleMesa('38')" class="mesa-btn w-full h-7 rounded text-[11px] font-bold border border-pubBorder flex items-center justify-center">38<span class="text-[8px] ml-0.5 opacity-70">(3)</span></button>
+                                        <button type="button" id="btn-mesa-37" onclick="toggleMesa('37')" class="mesa-btn w-full h-7 rounded text-[11px] font-bold border border-pubBorder flex items-center justify-center">37<span class="text-[8px] ml-0.5 opacity-70">(3)</span></button>
                                     </div>
-                                    <!-- Parede / Divisória -->
-                                    <div class="flex-1 space-y-1.5">
+                                    <!-- Parede (43 pequena, 42 e 41 grandes de 6) -->
+                                    <div class="flex-1 flex flex-col gap-1.5">
                                         <span class="block text-[8px] font-bold text-gray-400 text-center">Parede</span>
-                                        <button type="button" id="btn-mesa-43" onclick="toggleMesa('43')" class="mesa-btn w-full h-7 rounded text-[11px] font-bold border border-pubBorder flex items-center justify-center">43 (3)</button>
-                                        <button type="button" id="btn-mesa-42" onclick="toggleMesa('42')" class="mesa-btn w-full h-7 rounded text-[11px] font-bold border border-pubBorder flex items-center justify-center">42 (6)</button>
-                                        <button type="button" id="btn-mesa-41" onclick="toggleMesa('41')" class="mesa-btn w-full h-7 rounded text-[11px] font-bold border border-pubBorder flex items-center justify-center">41 (6)</button>
+                                        <button type="button" id="btn-mesa-43" onclick="toggleMesa('43')" class="mesa-btn w-full h-6 rounded text-[11px] font-bold border border-pubBorder flex items-center justify-center">43<span class="text-[8px] ml-0.5 opacity-70">(3)</span></button>
+                                        <button type="button" id="btn-mesa-42" onclick="toggleMesa('42')" class="mesa-btn w-full h-9 rounded text-[11px] font-bold border border-pubBorder flex items-center justify-center">42<span class="text-[8px] ml-0.5 opacity-70">(6)</span></button>
+                                        <button type="button" id="btn-mesa-41" onclick="toggleMesa('41')" class="mesa-btn w-full h-9 rounded text-[11px] font-bold border border-pubBorder flex items-center justify-center">41<span class="text-[8px] ml-0.5 opacity-70">(6)</span></button>
                                     </div>
                                 </div>
 
-                                <!-- Escada de Acesso e Mesa 40 -->
-                                <div class="flex gap-2 items-center">
-                                    <div class="bg-amber-950/60 border border-amber-600/70 text-amber-300 text-[9px] font-black p-1.5 rounded flex-1 text-center">
-                                        ▲ ESCADA ACESSO
-                                    </div>
-                                    <button type="button" id="btn-mesa-40" onclick="toggleMesa('40')" class="mesa-btn w-14 h-8 rounded text-[11px] font-bold border border-pubBorder flex items-center justify-center">40 (3)</button>
-                                </div>
-
-                                <!-- Fundo Direito: Mesa 45 (TV) + Mesa de Bilhar (Verde Escuro) + Bar Mezanino -->
+                                <!-- Escada amarela lateral + Área Fumantes (verde claro / saída) -->
                                 <div class="flex gap-2 items-stretch">
-                                    <!-- Mesa 45 com TV -->
-                                    <div class="w-14">
-                                        <div class="w-full bg-purple-600/80 text-white text-[7px] font-bold text-center py-0.5 rounded-t">📺 TV</div>
-                                        <button type="button" id="btn-mesa-45" onclick="toggleMesa('45')" class="mesa-btn w-full h-8 rounded-b text-[10px] font-bold border border-pubBorder flex items-center justify-center">45 (2)</button>
+                                    <div class="bg-amber-950/60 border-2 border-amber-500/80 text-amber-300 text-[9px] font-black p-1.5 rounded flex-1 text-center flex items-center justify-center">
+                                        ▨ ESCADA
+                                    </div>
+                                    <div class="flex-1 bg-emerald-800/40 border border-emerald-500/80 rounded-lg p-1 text-center flex flex-col justify-center">
+                                        <span class="text-[9px] font-black text-emerald-300 leading-tight uppercase">Saída</span>
+                                        <span class="text-[8px] text-emerald-300/80">Fumantes 🚬</span>
+                                    </div>
+                                </div>
+
+                                <!-- Fundo direito: 40 + Bilhar (verde escuro) + 45(TV) + Bar Mezanino vertical -->
+                                <div class="flex gap-2 items-stretch flex-1">
+                                    <!-- Coluna 40 + 44 + 45(TV) -->
+                                    <div class="flex flex-col gap-2 w-14">
+                                        <button type="button" id="btn-mesa-40" onclick="toggleMesa('40')" class="mesa-btn w-full h-8 rounded text-[11px] font-bold border border-pubBorder flex items-center justify-center">40<span class="text-[8px] ml-0.5 opacity-70">(3)</span></button>
+                                        <button type="button" id="btn-mesa-44" onclick="toggleMesa('44')" class="mesa-btn w-full h-9 rounded text-[11px] font-bold border border-pubBorder flex items-center justify-center">44<span class="text-[8px] ml-0.5 opacity-70">(4)</span></button>
+                                        <div>
+                                            <div class="w-full bg-purple-600/80 text-white text-[7px] font-bold text-center py-0.5 rounded-t">📺 TV</div>
+                                            <button type="button" id="btn-mesa-45" onclick="toggleMesa('45')" class="mesa-btn w-full h-7 rounded-b text-[10px] font-bold border border-pubBorder flex items-center justify-center">45<span class="text-[8px] ml-0.5 opacity-70">(2)</span></button>
+                                        </div>
                                     </div>
 
-                                    <!-- Verde Escuro: Mesa de Bilhar / Sinuca -->
+                                    <!-- Bilhar (verde escuro = saída fumantes fica em cima; aqui a mesa de sinuca) -->
                                     <div class="flex-1 bg-green-900 border border-green-700 rounded-lg p-1 text-center flex flex-col justify-center shadow-inner">
                                         <span class="text-[9px] font-black text-white leading-tight uppercase">🎱 BILHAR</span>
                                         <span class="text-[7px] text-green-200">Sinuca</span>
                                     </div>
 
-                                    <!-- Bar Mezanino -->
-                                    <div class="w-10 bg-neutral-900 border border-pubBorder rounded-lg flex items-center justify-center">
+                                    <!-- Bar Mezanino (vertical, na direita) -->
+                                    <div class="w-9 bg-neutral-900 border border-pubBorder rounded-lg flex items-center justify-center">
                                         <span class="text-[9px] font-black text-pubGold [writing-mode:vertical-rl] rotate-180">BAR MEZANINO</span>
                                     </div>
                                 </div>
-
                             </div>
                         </div>
 
-                        <!-- LINHA INFERIOR DO MEZANINO: Bistrôs 33, 34, 35, 36 -->
-                        <div class="mt-3 pt-2 border-t border-pubBorder/60 flex justify-between items-center px-4">
-                            <span class="text-[10px] font-bold text-gray-400 uppercase">Fundo do Mezanino:</span>
-                            <div class="flex gap-4">
-                                <button type="button" id="btn-mesa-33" onclick="toggleMesa('33')" class="mesa-btn w-9 h-9 rounded-full text-xs font-bold border border-pubBorder flex items-center justify-center">33</button>
-                                <button type="button" id="btn-mesa-34" onclick="toggleMesa('34')" class="mesa-btn w-9 h-9 rounded-full text-xs font-bold border border-pubBorder flex items-center justify-center">34</button>
-                                <button type="button" id="btn-mesa-35" onclick="toggleMesa('35')" class="mesa-btn w-9 h-9 rounded-full text-xs font-bold border border-pubBorder flex items-center justify-center">35</button>
-                                <button type="button" id="btn-mesa-36" onclick="toggleMesa('36')" class="mesa-btn w-9 h-9 rounded-full text-xs font-bold border border-pubBorder flex items-center justify-center">36</button>
-                            </div>
+                        <!-- LINHA INFERIOR (base do desenho): mesas 33, 34, 35, 36 -->
+                        <div class="mt-3 pt-2 border-t border-pubBorder/60 flex justify-center items-center gap-6">
+                            <span class="text-[9px] font-bold text-gray-400 uppercase">Base:</span>
+                            <button type="button" id="btn-mesa-33" onclick="toggleMesa('33')" class="mesa-btn w-9 h-9 rounded-full text-xs font-bold border border-pubBorder flex items-center justify-center">33</button>
+                            <button type="button" id="btn-mesa-34" onclick="toggleMesa('34')" class="mesa-btn w-9 h-9 rounded-full text-xs font-bold border border-pubBorder flex items-center justify-center">34</button>
+                            <button type="button" id="btn-mesa-35" onclick="toggleMesa('35')" class="mesa-btn w-9 h-9 rounded-full text-xs font-bold border border-pubBorder flex items-center justify-center">35</button>
+                            <button type="button" id="btn-mesa-36" onclick="toggleMesa('36')" class="mesa-btn w-9 h-9 rounded-full text-xs font-bold border border-pubBorder flex items-center justify-center">36</button>
                         </div>
 
                     </div>
