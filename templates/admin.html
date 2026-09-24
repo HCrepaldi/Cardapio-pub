@@ -259,7 +259,7 @@
                     <select name="show_id" onchange="this.form.submit()" class="bg-neutral-900 border border-pubBorder text-white rounded-lg px-3 py-2 text-xs sm:text-sm focus:border-pubGold focus:outline-none">
                         {% for s in shows %}
                             <option value="{{ s.id }}" {% if show_atual and s.id == show_atual.id %}selected{% endif %}>
-                                {{ s.data_show }} — {{ s.banda }}
+                                {{ s.data_show | data_br }} — {{ s.banda }}
                             </option>
                         {% endfor %}
                     </select>
@@ -267,7 +267,7 @@
 
                 {% if show_atual %}
                 <!-- Botão Excluir o Show Selecionado com Aviso de Confirmação -->
-                <form method="POST" action="/admin/shows/excluir/{{ show_atual.id }}" class="inline" onsubmit="return confirm('⚠️ ATENÇÃO: Deseja realmente excluir o show \'{{ show_atual.banda }}\' de {{ show_atual.data_show }} e todas as reservas dele?');">
+                <form method="POST" action="/admin/shows/excluir/{{ show_atual.id }}" class="inline" onsubmit="return confirm('⚠️ ATENÇÃO: Deseja realmente excluir o show \'{{ show_atual.banda }}\' de {{ show_atual.data_show | data_br }} e todas as reservas dele?');">
                     <button type="submit" title="Excluir este show da agenda" class="p-2 rounded-lg bg-red-950/60 hover:bg-red-900 border border-red-800 text-red-300 text-xs font-bold transition flex items-center gap-1 cursor-pointer">
                         🗑️ <span class="hidden sm:inline">Excluir Data</span>
                     </button>

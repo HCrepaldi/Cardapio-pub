@@ -25,6 +25,45 @@ app.mount("/static", StaticFiles(directory=pasta_static), name="static")
 
 templates = Jinja2Templates(directory=os.path.join(DIRETORIO_BASE, "templates"))
 
+# ---------------------------------------------------------------------------
+# FILTROS DE DATA (formatam a exibição sem mexer no que está salvo no banco).
+# O banco continua guardando '2026-09-25' (ISO, ideal para ordenar). Aqui só
+# mudamos COMO a data aparece na tela.
+# ---------------------------------------------------------------------------
+_MESES_PT = [
+    "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+    "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
+]
+_DIAS_SEMANA_PT = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"]  # weekday(): 0=Seg
+
+
+def _parse_data(data_iso):
+    """Tenta converter '2026-09-25' em datetime. Devolve None se não der."""
+    try:
+        return datetime.strptime(str(data_iso), "%Y-%m-%d")
+    except (ValueError, TypeError):
+        return None
+
+
+def filtro_data_br(data_iso):
+    """Formato B: '25/09/2026' (DD/MM/AAAA). Usado no painel admin."""
+    dt = _parse_data(data_iso)
+    return dt.strftime("%d/%m/%Y") if dt else str(data_iso)
+
+
+def filtro_data_extenso(data_iso):
+    """Formato C: 'Sex, 25 de Setembro'. Usado nas telas index e cancelar."""
+    dt = _parse_data(data_iso)
+    if not dt:
+        return str(data_iso)
+    dia_semana = _DIAS_SEMANA_PT[dt.weekday()]
+    mes = _MESES_PT[dt.month - 1]
+    return f"{dia_semana}, {dt.day:02d} de {mes}"
+
+
+templates.env.filters["data_br"] = filtro_data_br
+templates.env.filters["data_extenso"] = filtro_data_extenso
+
 # A senha do admin vem de uma variável de ambiente (NUNCA fica no código).
 # - Em produção (Render): defina a variável SENHA_ADMIN no painel.
 # - No seu PC: defina no terminal ou num arquivo .env (que o .gitignore bloqueia).
