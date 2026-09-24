@@ -64,7 +64,7 @@
                         <label class="block text-xs uppercase font-bold text-gray-400 mb-1">Escolha a Noite / Banda</label>
                         <select name="show_id" required class="w-full bg-neutral-900 border border-pubBorder rounded-lg p-3 text-white text-sm focus:border-pubGold focus:outline-none">
                             {% for s in shows %}
-                                <option value="{{ s.id }}">{{ s.data_show }} — {{ s.banda }}</option>
+                                <option value="{{ s.id }}">{{ s.data_show | data_extenso }} — {{ s.banda }}</option>
                             {% else %}
                                 <option value="" disabled>Nenhum show disponível no momento</option>
                             {% endfor %}
@@ -113,7 +113,7 @@
                 {% for s in shows %}
                 <div class="bg-pubCard border border-pubBorder rounded-2xl p-5 flex items-center justify-between hover:border-neutral-700 transition">
                     <div>
-                        <span class="text-xs text-pubGold font-black uppercase tracking-widest">{{ s.data_show }}</span>
+                        <span class="text-xs text-pubGold font-black uppercase tracking-widest">{{ s.data_show | data_extenso }}</span>
                         <h4 class="text-base font-bold text-white mt-0.5">{{ s.banda }}</h4>
                         <p class="text-xs text-gray-400 mt-1">Abertura: 19:30h • Show: 22h</p>
                     </div>
