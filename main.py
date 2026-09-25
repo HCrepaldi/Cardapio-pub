@@ -275,19 +275,46 @@ def _formatar_data_br(data_iso):
         return str(data_iso)
 
 
+def _ordem_mesa(reserva):
+    """Chave de ordenação por número da PRIMEIRA mesa alocada.
+    mesas_alocadas é texto (ex: '5', '12', '4,5', '41,42,43'). Ordena
+    numericamente pela primeira mesa (assim 2 vem antes de 10). Reservas
+    sem mesa vão para o fim."""
+    valor = (reserva["mesas_alocadas"] or "").strip()
+    if not valor:
+        return (9999,)
+    primeira = valor.split(",")[0].strip()
+    try:
+        return (int(primeira),)
+    except ValueError:
+        return (9999,)
+
+
 @app.get("/admin/imprimir/{show_id}", response_class=HTMLResponse)
 def imprimir_lista_80mm(request: Request, show_id: int, auth: bool = Depends(verificar_autenticacao)):
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM shows WHERE id = ?", (show_id,))
     show = cursor.fetchone()
-    cursor.execute("SELECT * FROM reservas WHERE show_id = ? ORDER BY nome_cliente ASC", (show_id,))
+    cursor.execute("SELECT * FROM reservas WHERE show_id = ?", (show_id,))
     reservas = cursor.fetchall()
     cursor.execute("SELECT COALESCE(SUM(qtd_pessoas), 0) FROM reservas WHERE show_id = ?", (show_id,))
     total_pessoas = cursor.fetchone()[0]
     conn.close()
-    # Lista só dos aniversariantes (para as listas separadas caixa/banda)
-    aniversariantes = [r for r in reservas if r["aniversario"] == "Sim"]
+
+    # Lista de reservas: ORDENADA POR MESA (facilita para a equipe conferir)
+    reservas = sorted(reservas, key=_ordem_mesa)
+
+    # Aniversariantes CAIXA: também por mesa
+    aniversariantes = sorted(
+        [r for r in reservas if r["aniversario"] == "Sim"], key=_ordem_mesa
+    )
+    # Aniversariantes BANDA: por ordem alfabética de nome
+    aniversariantes_banda = sorted(
+        [r for r in reservas if r["aniversario"] == "Sim"],
+        key=lambda r: (r["nome_cliente"] or "").lower(),
+    )
+
     # Data do show em DD/MM/AA
     data_show_br = _formatar_data_br(show["data_show"]) if show else ""
     # Data/hora REAL da impressão (momento em que o caixa emitiu a lista),
@@ -298,6 +325,7 @@ def imprimir_lista_80mm(request: Request, show_id: int, auth: bool = Depends(ver
         "reservas": reservas,
         "total_pessoas": total_pessoas,
         "aniversariantes": aniversariantes,
+        "aniversariantes_banda": aniversariantes_banda,
         "data_show_br": data_show_br,
         "data_impressao": data_impressao,
     })
